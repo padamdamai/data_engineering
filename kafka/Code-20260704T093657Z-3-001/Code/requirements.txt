@@ -1,0 +1,2 @@
+# Confluent's Python client plus fastavro support used by the Schema Registry Avro SerDes.
+confluent-kafka[avro,schemaregistry]>=2.12,<3

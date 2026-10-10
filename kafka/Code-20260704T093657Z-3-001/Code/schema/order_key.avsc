@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "OrderKey",
+  "namespace": "com.example.ecommerce.keys",
+  "doc": "Kafka key used to keep all lifecycle events for one order on the same partition.",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Unique order identifier used for Kafka partitioning and per-order event ordering."
+    }
+  ]
+}
