@@ -1,0 +1,3 @@
+%4|1792267376.704|GETPID|rdkafka#producer-1| [thrd:main]: Failed to acquire idempotence PID from broker sasl_ssl://pkc-oxqxx9.us-east-1.aws.confluent.cloud:9092/bootstrap: Local: Broker handle destroyed without termination: retrying
+%6|1792267378.869|GETSUBSCRIPTIONS|rdkafka#producer-1| [thrd:main]: Telemetry client instance id changed from AAAAAAAAAAAAAAAAAAAAAA to P0jg3AFORqifAntfalpevA
+Produced 16 stations across 5 cities: Bengaluru, Delhi, Hyderabad, Mumbai, Pune

@@ -1,0 +1,25 @@
+{
+"type": "record",
+"name": "ChargingStation",
+"namespace": "com.voltroute.reference",
+"fields": [
+{"name": "station_id",
+"type": "string"},
+{"name": "station_name",
+"type": "string"},
+{"name": "city",
+"type": "string"},
+{"name": "operator",
+"type": "string"},
+{"name": "latitude",
+"type": "double"},
+{"name": "longitude",
+"type": "double"},
+{"name": "max_power_kw",
+"type": "double"},
+{"name": "num_connectors", "type": "int"},
+{"name": "tariff_per_kwh", "type": "double"},
+{"name": "status",
+"type": "string"}
+]
+}

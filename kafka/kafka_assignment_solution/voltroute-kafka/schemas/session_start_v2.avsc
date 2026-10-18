@@ -1,0 +1,20 @@
+{
+"type": "record",
+"name": "SessionStart",
+"namespace": "com.voltroute.events",
+"fields": [
+{"name": "session_id",
+"type": "string"},
+{"name": "station_id",
+"type": "string"},
+{"name": "connector_id", "type": "int"},
+{"name": "vehicle_id",
+"type": "string"},
+{"name": "user_id",
+"type": "string"},
+{"name": "start_time",
+"type": {"type": "long", "logicalType": "timestamp-millis"}},
+{"name": "start_soc_pct","type": "int"},
+{"name": "payment_method", "type": "string", "default": "UNKNOWN"}
+]
+}

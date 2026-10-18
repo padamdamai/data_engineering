@@ -1,0 +1,14 @@
+{
+"type": "record",
+"name": "SessionStop",
+"namespace": "com.voltroute.events",
+"fields": [
+{"name": "session_id", "type": "string"},
+{"name": "station_id", "type": "string"},
+{"name": "stop_time",
+"type": {"type": "long", "logicalType": "timestamp-millis"}},
+{"name": "end_soc_pct", "type": "int"},
+{"name": "energy_kwh", "type": "double"},
+{"name": "stop_reason", "type": "string"}
+]
+}

@@ -1,0 +1,5 @@
+%4|1792270204.213|GETPID|rdkafka#producer-1| [thrd:main]: Failed to acquire idempotence PID from broker sasl_ssl://pkc-oxqxx9.us-east-1.aws.confluent.cloud:9092/bootstrap: Local: Broker handle destroyed without termination: retrying
+%6|1792270206.029|GETSUBSCRIPTIONS|rdkafka#producer-2| [thrd:main]: Telemetry client instance id changed from AAAAAAAAAAAAAAAAAAAAAA to F7gcR5ZVTyWcmGHnsOSk5Q
+%6|1792270206.784|GETSUBSCRIPTIONS|rdkafka#producer-1| [thrd:main]: Telemetry client instance id changed from AAAAAAAAAAAAAAAAAAAAAA to aPcY/k6CRTyglBMdZPxkKA
+Sending 78 events for 40 sessions; 2 starts have NO stop
+Done.

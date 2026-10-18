@@ -1,0 +1,2 @@
+%6|1792267162.993|GETSUBSCRIPTIONS|rdkafka#producer-1| [thrd:main]: Telemetry client instance id changed from AAAAAAAAAAAAAAAAAAAAAA to gxc9HjvRTdKZx5dxy3GBZg
+Produced 16 stations across 5 cities: Bengaluru, Delhi, Hyderabad, Mumbai, Pune
