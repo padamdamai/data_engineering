@@ -1,0 +1,22 @@
+{
+  "connector.class": "MongoDbAtlasSource",
+  "name": "cinebook-bookings-source",
+  "kafka.auth.mode": "KAFKA_API_KEY",
+  "kafka.api.key": "{{KAFKA_API_KEY}}",
+  "kafka.api.secret": "{{KAFKA_API_SECRET}}",
+  "connection.host": "{{CLUSTER}}.mongodb.net",
+  "connection.user": "{{ATLAS_DB_USER}}",
+  "connection.password": "{{ATLAS_DB_PASSWORD}}",
+  "database": "cinebook",
+  "collection": "bookings",
+  "topic.prefix": "cdc",
+  "output.data.format": "JSON",
+  "startup.mode": "copy_existing",
+  "change.stream.full.document": "updateLookup",
+  "poll.await.time.ms": "5000",
+  "poll.max.batch.size": "100",
+  "tasks.max": "1"
+}
+
+
+

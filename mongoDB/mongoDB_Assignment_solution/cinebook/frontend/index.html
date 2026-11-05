@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CineBook</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 860px;
+            margin: 24px auto;
+            padding: 0 12px;
+        }
+
+        h1 {
+            margin-bottom: 4px;
+        }
+
+        section {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 14px 0;
+        }
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        .bar {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .card {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 8px 10px;
+            margin: 4px 0;
+            border: 1px solid #999;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+
+        .card:hover {
+            background: #eef3ff;
+        }
+
+        .card.active {
+            background: #dce8ff;
+            border-color: #1976d2;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+        }
+
+        .rowlabel {
+            width: 22px;
+            font-weight: bold;
+        }
+
+        .seat {
+            width: 34px;
+            height: 34px;
+            margin: 2px;
+            border: 1px solid #777;
+            border-radius: 4px;
+            background: #e8f5e9;
+        }
+
+        .seat.premium {
+            background: #fff3cd;
+        }
+
+        .seat.selected {
+            background: #1976d2;
+            color: #fff;
+            border-color: #0d47a1;
+        }
+
+        .seat.taken {
+            background: #bbb;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .legend span {
+            display: inline-block;
+            margin-right: 14px;
+            font-size: 13px;
+        }
+
+        .box {
+            width: 14px;
+            height: 14px;
+            display: inline-block;
+            vertical-align: middle;
+            border: 1px solid #777;
+            margin-right: 4px;
+        }
+
+        .primary {
+            background: #1976d2;
+            color: #fff;
+            border: 0;
+            padding: 8px 14px;
+            border-radius: 6px;
+        }
+
+        .primary:disabled,
+        .secondary:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .secondary {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid #999;
+            background: #fff;
+        }
+
+        .ok {
+            background: #e8f5e9;
+            border: 1px solid #2e7d32;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .err {
+            background: #fdecea;
+            border: 1px solid #c62828;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .note {
+            background: #fff8e1;
+            border: 1px solid #f9a825;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .muted {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>CineBook</h1>
+    <p class="muted">Minimal frontend: browse movies, pick a show, choose seats, book.</p>
+
+    <div class="bar">
+        <label>City
+            <select id="city">
+                <option>Delhi</option>
+                <option>Mumbai</option>
+                <option>Bengaluru</option>
+            </select>
+        </label>
+        <label>I am
+            <select id="user">
+                <option>USR-1001</option>
+                <option>USR-1002</option>
+                <option>USR-1003</option>
+                <option>USR-1004</option>
+            </select>
+        </label>
+    </div>
+
+    <section>
+        <h2>1. Movies</h2>
+        <div id="movies" class="muted">Loading...</div>
+    </section>
+
+    <section>
+        <h2>2. Shows</h2>
+        <div id="shows" class="muted">Pick a movie first.</div>
+    </section>
+
+    <section>
+        <h2>3. Seats</h2>
+        <div class="legend">
+            <span><i class="box" style="background:#e8f5e9"></i>Regular</span>
+            <span><i class="box" style="background:#fff3cd"></i>Premium</span>
+            <span><i class="box" style="background:#1976d2"></i>Selected</span>
+            <span><i class="box" style="background:#bbb"></i>Taken</span>
+        </div>
+        <div id="seatinfo" class="muted">Pick a show first.</div>
+        <div id="seatmap"></div>
+        <p id="selection" class="muted"></p>
+        <button id="book" class="primary" disabled>Book selected seats</button>
+        <button id="steal" class="secondary" disabled>Demo: another user grabs my seats first</button>
+    </section>
+
+    <section>
+        <h2>4. Result</h2>
+        <div id="result" class="muted">Nothing booked yet.</div>
+    </section>
+
+    <script>
+        const state = { movie: null, show: null, data: null, selected: new Set() };
+        const $ = (id) => document.getElementById(id);
+
+        // small helper: call the API and always return {ok, status, data}
+        async function api(path, options) {
+            const res = await fetch(path, options);
+            let data = null;
+            try { data = await res.json(); } catch (e) { /* no body */ }
+            return { ok: res.ok, status: res.status, data: data };
+        }
+
+        // the API returns UTC times without a "Z"; add it so the browser converts correctly
+        function fmt(t) {
+            const iso = /Z|[+-]\d\d:\d\d$/.test(t) ? t : t + "Z";
+            return new Date(iso).toLocaleString();
+        }
+
+        function el(tag, text, cls) {
+            const e = document.createElement(tag);
+            if (text !== undefined) e.textContent = text;   // textContent: never inject raw HTML
+            if (cls) e.className = cls;
+            return e;
+        }
+
+        // ---------------------------------------------------------------- 1. movies
+        async function loadMovies() {
+            state.movie = null; state.show = null; state.data = null; state.selected.clear();
+            $("shows").textContent = "Pick a movie first.";
+            $("seatinfo").textContent = "Pick a show first.";
+            $("seatmap").replaceChildren();
+            updateSelection();
+
+            const box = $("movies");
+            box.textContent = "Loading...";
+            const r = await api("/movies?city=" + encodeURIComponent($("city").value));
+            if (!r.ok) { box.textContent = "Could not load movies."; return; }
+            box.replaceChildren();
+            if (r.data.length === 0) { box.textContent = "No movies in this city."; return; }
+            r.data.forEach((m) => {
+                const b = el("button", m.title + "  (" + m.language + ", " + m.duration_min + " min, " + m.certification + ")", "card");
+                b.onclick = () => { markActive(box, b); loadShows(m); };
+                box.appendChild(b);
+            });
+        }
+
+        function markActive(container, button) {
+            container.querySelectorAll(".card").forEach((c) => c.classList.remove("active"));
+            button.classList.add("active");
+        }
+
+        // ----------------------------------------------------------------- 2. shows
+        async function loadShows(movie) {
+            state.movie = movie; state.show = null; state.data = null; state.selected.clear();
+            $("seatinfo").textContent = "Pick a show first.";
+            $("seatmap").replaceChildren();
+            updateSelection();
+
+            const box = $("shows");
+            box.textContent = "Loading...";
+            const url = "/movies/" + encodeURIComponent(movie._id) + "/shows?city=" + encodeURIComponent($("city").value);
+            const r = await api(url);
+            if (!r.ok) { box.textContent = "Could not load shows."; return; }
+            box.replaceChildren();
+            if (r.data.length === 0) { box.textContent = "No shows for this movie in this city."; return; }
+            r.data.forEach((s) => {
+                const label = s.theater_id + " / " + s.screen_id + "  |  " + fmt(s.start_time) +
+                    "  |  Rs " + s.prices.PREMIUM + " premium, Rs " + s.prices.REGULAR + " regular  |  " +
+                    s.available_count + " seats left";
+                const b = el("button", label, "card");
+                b.onclick = () => { markActive(box, b); loadSeats(s); };
+                box.appendChild(b);
+            });
+        }
+
+        // ----------------------------------------------------------------- 3. seats
+        async function loadSeats(show) {
+            state.show = show; state.selected.clear();
+            const r = await api("/shows/" + encodeURIComponent(show._id) + "/seats");
+            if (!r.ok) { $("seatinfo").textContent = "Could not load seats."; return; }
+            state.data = r.data;
+            $("seatinfo").textContent = show._id + ": " + r.data.available_count + " of " + r.data.seats.length + " seats available";
+            renderSeats();
+        }
+
+        function renderSeats() {
+            const d = state.data;
+            const map = $("seatmap");
+            map.replaceChildren();
+            const rows = {};
+            d.seats.forEach((s) => { (rows[s.seat[0]] = rows[s.seat[0]] || []).push(s); });
+
+            Object.keys(rows).sort().forEach((letter) => {
+                const row = el("div", undefined, "row");
+                row.appendChild(el("span", letter, "rowlabel"));
+                rows[letter].forEach((s) => {
+                    const b = el("button", s.seat.slice(1), "seat " + s.category.toLowerCase());
+                    b.title = s.seat + " | " + s.category + " | Rs " + d.prices[s.category] + " | " + s.status;
+                    if (s.status !== "AVAILABLE") { b.classList.add("taken"); b.disabled = true; }
+                    else if (state.selected.has(s.seat)) { b.classList.add("selected"); }
+                    b.onclick = () => toggleSeat(s.seat);
+                    row.appendChild(b);
+                });
+                map.appendChild(row);
+            });
+            updateSelection();
+        }
+
+        function toggleSeat(seat) {
+            if (state.selected.has(seat)) state.selected.delete(seat); else state.selected.add(seat);
+            renderSeats();
+        }
+
+        function updateSelection() {
+            const seats = [...state.selected];
+            let total = 0;
+            if (state.data) {
+                const category = {};
+                state.data.seats.forEach((s) => { category[s.seat] = s.category; });
+                seats.forEach((s) => { total += state.data.prices[category[s]]; });
+            }
+            $("selection").textContent = seats.length
+                ? "Selected: " + seats.join(", ") + "  |  Total: Rs " + total
+                : "No seats selected.";
+            $("book").disabled = seats.length === 0;
+            $("steal").disabled = seats.length === 0;
+        }
+
+        // --------------------------------------------------------------- 4. booking
+        function bookSeats(user, seats) {
+            return api("/bookings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: user, show_id: state.show._id, seats: seats }),
+            });
+        }
+
+        function showResult(r) {
+            const box = $("result");
+            box.replaceChildren();
+            if (r.ok) {
+                const b = r.data;
+                box.className = "ok";
+                box.appendChild(el("strong", "Booking confirmed: " + b._id));
+                box.appendChild(el("div", b.movie_title + " at " + b.theater_name + ", " + fmt(b.start_time)));
+                box.appendChild(el("div", "Seats: " + b.seats.join(", ") + "  |  Amount: Rs " + b.amount));
+            } else if (r.status === 409) {
+                const d = r.data.detail;
+                box.className = "err";
+                box.appendChild(el("strong", "Seat already taken"));
+                box.appendChild(el("div", d.message));
+                box.appendChild(el("div", "Unavailable seats: " + d.unavailable.join(", ")));
+            } else {
+                box.className = "err";
+                box.appendChild(el("strong", "Booking failed (HTTP " + r.status + ")"));
+                box.appendChild(el("div", JSON.stringify(r.data && r.data.detail)));
+            }
+        }
+
+        $("book").onclick = async () => {
+            const r = await bookSeats($("user").value, [...state.selected]);
+            showResult(r);
+            await loadSeats(state.show);          // refresh: booked or lost seats now show as taken
+        };
+
+        // Demo for the "seat already taken" case: another user books my seats BEHIND the page's back.
+        // The seat map is NOT refreshed, so it is stale, exactly like a real second customer.
+        $("steal").onclick = async () => {
+            const me = $("user").value;
+            const other = me === "USR-1004" ? "USR-1001" : "USR-1004";
+            const r = await bookSeats(other, [...state.selected]);
+            const box = $("result");
+            box.replaceChildren();
+            box.className = "note";
+            box.textContent = r.ok
+                ? other + " just booked " + [...state.selected].join(", ") + ". Now click 'Book selected seats' to see the rejection."
+                : "The other user could not book those seats either (HTTP " + r.status + ").";
+        };
+
+        $("city").onchange = loadMovies;
+        loadMovies();
+    </script>
+</body>
+
+</html>

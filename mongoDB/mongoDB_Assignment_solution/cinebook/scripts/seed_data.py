@@ -127,3 +127,6 @@ if __name__ == "__main__":
         db[name].insert_many(docs)
         print(f"{name}: inserted {len(docs)} documents")
     print("bookings: left empty (created through the API)")
+
+db["bookings"].delete_many({})
+print("bookings: cleared (they are created through the API)")
