@@ -1,3 +1,0 @@
-ACCEPTED - ADD payment_method WITH a default
-REJECTED - ADD loyalty_tier WITHOUT a default
-ACCEPTED - REMOVE the user_id field
