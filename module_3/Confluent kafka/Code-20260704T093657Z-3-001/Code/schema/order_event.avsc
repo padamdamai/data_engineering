@@ -1,0 +1,104 @@
+{
+  "type": "record",
+  "name": "OrderEvent",
+  "namespace": "com.example.ecommerce.events",
+  "doc": "An immutable event emitted whenever an e-commerce order changes state.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Globally unique event identifier used for downstream deduplication."
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "OrderEventType",
+        "symbols": [
+          "ORDER_CREATED",
+          "ORDER_CONFIRMED",
+          "ORDER_SHIPPED",
+          "ORDER_DELIVERED",
+          "ORDER_CANCELLED"
+        ]
+      }
+    },
+    {
+      "name": "event_version",
+      "type": "int",
+      "default": 1,
+      "doc": "Version of the event contract emitted by the source application."
+    },
+    {
+      "name": "occurred_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "UTC time at which the business event occurred."
+    },
+    {
+      "name": "order_id",
+      "type": "string"
+    },
+    {
+      "name": "customer_id",
+      "type": "string",
+      "doc": "Also used as the Kafka key so one customer's events remain ordered."
+    },
+    {
+      "name": "order_status",
+      "type": {
+        "type": "enum",
+        "name": "OrderStatus",
+        "symbols": [
+          "CREATED",
+          "CONFIRMED",
+          "SHIPPED",
+          "DELIVERED",
+          "CANCELLED"
+        ]
+      }
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "doc": "ISO-4217 currency code such as INR or USD."
+    },
+    {
+      "name": "total_amount_minor",
+      "type": "long",
+      "doc": "Total in the currency's minor unit (for example, paise), avoiding floating-point money errors."
+    },
+    {
+      "name": "items",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "OrderItem",
+          "fields": [
+            {"name": "sku", "type": "string"},
+            {"name": "quantity", "type": "int"},
+            {"name": "unit_price_minor", "type": "long"}
+          ]
+        }
+      }
+    },
+    {
+      "name": "shipping_country",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional ISO-3166 alpha-2 destination country code."
+    },
+    {
+      "name": "metadata",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {},
+      "doc": "Non-sensitive tracing and source-system attributes."
+    }
+  ]
+}
