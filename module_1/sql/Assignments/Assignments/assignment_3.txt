@@ -1,0 +1,1491 @@
+================================================================================
+                    SQL MASTERY BOOTCAMP - ASSIGNMENT 3
+================================================================================
+
+CREATE DATABASE assignment_sql;
+
+================================================================================
+QUESTION 1: Customer Retention Analysis
+================================================================================
+
+Problem Statement:
+Calculate monthly customer retention rate. A customer is "retained" if they 
+made a purchase in both the current and previous month.
+
+Schema:
+CREATE TABLE assignment_sql.purchases_ret (
+    purchase_id INT PRIMARY KEY,
+    customer_id INT,
+    purchase_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.purchases_ret VALUES
+(1, 101, '2024-01-15', 100),
+(2, 102, '2024-01-20', 200),
+(3, 103, '2024-01-25', 150),
+(4, 101, '2024-02-10', 120),
+(5, 102, '2024-02-15', 180),
+(6, 104, '2024-02-20', 90),
+(7, 101, '2024-03-05', 200),
+(8, 104, '2024-03-10', 150);
+
+Input Data:
++-------------+-------------+---------------+--------+
+| purchase_id | customer_id | purchase_date | amount |
++-------------+-------------+---------------+--------+
+| 1           | 101         | 2024-01-15    | 100    |
+| 2           | 102         | 2024-01-20    | 200    |
+| 3           | 103         | 2024-01-25    | 150    |
+| 4           | 101         | 2024-02-10    | 120    |
+| 5           | 102         | 2024-02-15    | 180    |
+| 6           | 104         | 2024-02-20    | 90     |
+| 7           | 101         | 2024-03-05    | 200    |
+| 8           | 104         | 2024-03-10    | 150    |
++-------------+-------------+---------------+--------+
+
+Expected Output:
++-----------+------------------+-------------------+----------------+
+| month     | total_customers  | retained_customers| retention_rate |
++-----------+------------------+-------------------+----------------+
+| 2024-01   | 3                | 0                 | 0.00           |
+| 2024-02   | 3                | 2                 | 66.67          |
+| 2024-03   | 2                | 1                 | 50.00          |
++-----------+------------------+-------------------+----------------+
+
+================================================================================
+QUESTION 2: Inventory Turnover Calculation
+================================================================================
+
+Problem Statement:
+Calculate inventory turnover ratio for each product (Cost of Goods Sold / 
+Average Inventory Value).
+
+Schema:
+CREATE TABLE assignment_sql.inventory (
+    product_id INT,
+    record_date DATE,
+    quantity INT,
+    unit_cost DECIMAL(10,2)
+);
+
+CREATE TABLE assignment_sql.sales_inv (
+    sale_id INT PRIMARY KEY,
+    product_id INT,
+    sale_date DATE,
+    quantity_sold INT,
+    unit_cost DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.inventory VALUES
+(1, '2024-01-01', 100, 10.00),
+(1, '2024-01-15', 80, 10.00),
+(1, '2024-01-31', 120, 10.00),
+(2, '2024-01-01', 50, 20.00),
+(2, '2024-01-15', 40, 20.00),
+(2, '2024-01-31', 60, 20.00);
+
+INSERT INTO assignment_sql.sales_inv VALUES
+(1, 1, '2024-01-10', 30, 10.00),
+(2, 1, '2024-01-20', 25, 10.00),
+(3, 2, '2024-01-12', 15, 20.00),
+(4, 2, '2024-01-25', 10, 20.00);
+
+Input Data - Inventory:
++------------+-------------+----------+-----------+
+| product_id | record_date | quantity | unit_cost |
++------------+-------------+----------+-----------+
+| 1          | 2024-01-01  | 100      | 10.00     |
+| 1          | 2024-01-15  | 80       | 10.00     |
+| 1          | 2024-01-31  | 120      | 10.00     |
+| 2          | 2024-01-01  | 50       | 20.00     |
+| 2          | 2024-01-15  | 40       | 20.00     |
+| 2          | 2024-01-31  | 60       | 20.00     |
++------------+-------------+----------+-----------+
+
+Input Data - Sales:
++---------+------------+------------+---------------+-----------+
+| sale_id | product_id | sale_date  | quantity_sold | unit_cost |
++---------+------------+------------+---------------+-----------+
+| 1       | 1          | 2024-01-10 | 30            | 10.00     |
+| 2       | 1          | 2024-01-20 | 25            | 10.00     |
+| 3       | 2          | 2024-01-12 | 15            | 20.00     |
+| 4       | 2          | 2024-01-25 | 10            | 20.00     |
++---------+------------+------------+---------------+-----------+
+
+Expected Output:
++------------+-------+----------------+------------------+
+| product_id | cogs  | avg_inventory  | turnover_ratio   |
++------------+-------+----------------+------------------+
+| 1          | 550   | 1000           | 0.55             |
+| 2          | 500   | 1000           | 0.50             |
++------------+-------+----------------+------------------+
+
+================================================================================
+QUESTION 3: Funnel Analysis
+================================================================================
+
+Problem Statement:
+Calculate conversion rates through a user funnel: Visit -> Signup -> Purchase.
+
+Schema:
+CREATE TABLE assignment_sql.user_events (
+    event_id INT PRIMARY KEY,
+    user_id INT,
+    event_type VARCHAR(20),
+    event_date DATE
+);
+
+INSERT INTO assignment_sql.user_events VALUES
+(1, 101, 'Visit', '2024-01-01'),
+(2, 102, 'Visit', '2024-01-01'),
+(3, 103, 'Visit', '2024-01-02'),
+(4, 104, 'Visit', '2024-01-02'),
+(5, 105, 'Visit', '2024-01-03'),
+(6, 101, 'Signup', '2024-01-01'),
+(7, 102, 'Signup', '2024-01-02'),
+(8, 103, 'Signup', '2024-01-03'),
+(9, 101, 'Purchase', '2024-01-02'),
+(10, 102, 'Purchase', '2024-01-03');
+
+Input Data:
++----------+---------+------------+------------+
+| event_id | user_id | event_type | event_date |
++----------+---------+------------+------------+
+| 1        | 101     | Visit      | 2024-01-01 |
+| 2        | 102     | Visit      | 2024-01-01 |
+| 3        | 103     | Visit      | 2024-01-02 |
+| 4        | 104     | Visit      | 2024-01-02 |
+| 5        | 105     | Visit      | 2024-01-03 |
+| 6        | 101     | Signup     | 2024-01-01 |
+| 7        | 102     | Signup     | 2024-01-02 |
+| 8        | 103     | Signup     | 2024-01-03 |
+| 9        | 101     | Purchase   | 2024-01-02 |
+| 10       | 102     | Purchase   | 2024-01-03 |
++----------+---------+------------+------------+
+
+Expected Output:
++------------+------------+-------------------+
+| event_type | user_count | conversion_rate   |
++------------+------------+-------------------+
+| Visit      | 5          | 100.00            |
+| Signup     | 3          | 60.00             |
+| Purchase   | 2          | 40.00             |
++------------+------------+-------------------+
+
+================================================================================
+QUESTION 4: Session Analysis
+================================================================================
+
+Problem Statement:
+Group user page views into sessions. A new session starts if there's more 
+than 30 minutes gap between consecutive page views.
+
+Schema:
+CREATE TABLE assignment_sql.page_views_sess (
+    view_id INT PRIMARY KEY,
+    user_id INT,
+    page_name VARCHAR(50),
+    view_time TIMESTAMP
+);
+
+INSERT INTO assignment_sql.page_views_sess VALUES
+(1, 101, 'Home', '2024-01-01 10:00:00'),
+(2, 101, 'Products', '2024-01-01 10:05:00'),
+(3, 101, 'Cart', '2024-01-01 10:20:00'),
+(4, 101, 'Home', '2024-01-01 11:00:00'),
+(5, 101, 'Products', '2024-01-01 11:10:00'),
+(6, 102, 'Home', '2024-01-01 09:00:00'),
+(7, 102, 'Products', '2024-01-01 09:15:00');
+
+Input Data:
++---------+---------+----------+---------------------+
+| view_id | user_id | page_name| view_time           |
++---------+---------+----------+---------------------+
+| 1       | 101     | Home     | 2024-01-01 10:00:00 |
+| 2       | 101     | Products | 2024-01-01 10:05:00 |
+| 3       | 101     | Cart     | 2024-01-01 10:20:00 |
+| 4       | 101     | Home     | 2024-01-01 11:00:00 |
+| 5       | 101     | Products | 2024-01-01 11:10:00 |
+| 6       | 102     | Home     | 2024-01-01 09:00:00 |
+| 7       | 102     | Products | 2024-01-01 09:15:00 |
++---------+---------+----------+---------------------+
+
+Expected Output:
++---------+------------+---------------------+---------------------+-------------+
+| user_id | session_id | session_start       | session_end         | page_count  |
++---------+------------+---------------------+---------------------+-------------+
+| 101     | 1          | 2024-01-01 10:00:00 | 2024-01-01 10:20:00 | 3           |
+| 101     | 2          | 2024-01-01 11:00:00 | 2024-01-01 11:10:00 | 2           |
+| 102     | 1          | 2024-01-01 09:00:00 | 2024-01-01 09:15:00 | 2           |
++---------+------------+---------------------+---------------------+-------------+
+
+================================================================================
+QUESTION 5: Market Basket Analysis - Frequently Bought Together
+================================================================================
+
+Problem Statement:
+Find pairs of products that are frequently bought together in the same order.
+
+Schema:
+CREATE TABLE assignment_sql.order_items_mba (
+    order_id INT,
+    product_id INT,
+    product_name VARCHAR(100)
+);
+
+INSERT INTO assignment_sql.order_items_mba VALUES
+(1, 1, 'Bread'),
+(1, 2, 'Butter'),
+(1, 3, 'Milk'),
+(2, 1, 'Bread'),
+(2, 2, 'Butter'),
+(3, 1, 'Bread'),
+(3, 3, 'Milk'),
+(4, 2, 'Butter'),
+(4, 3, 'Milk'),
+(5, 1, 'Bread'),
+(5, 2, 'Butter');
+
+Input Data:
++----------+------------+--------------+
+| order_id | product_id | product_name |
++----------+------------+--------------+
+| 1        | 1          | Bread        |
+| 1        | 2          | Butter       |
+| 1        | 3          | Milk         |
+| 2        | 1          | Bread        |
+| 2        | 2          | Butter       |
+| 3        | 1          | Bread        |
+| 3        | 3          | Milk         |
+| 4        | 2          | Butter       |
+| 4        | 3          | Milk         |
+| 5        | 1          | Bread        |
+| 5        | 2          | Butter       |
++----------+------------+--------------+
+
+Expected Output:
++-----------+-----------+-----------------+
+| product_1 | product_2 | times_together  |
++-----------+-----------+-----------------+
+| Bread     | Butter    | 4               |
+| Bread     | Milk      | 2               |
+| Butter    | Milk      | 2               |
++-----------+-----------+-----------------+
+
+================================================================================
+QUESTION 6: Time Series Gap Filling
+================================================================================
+
+Problem Statement:
+Fill in missing dates with zero sales for a continuous date series.
+
+Schema:
+CREATE TABLE assignment_sql.daily_sales_gap (
+    sale_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.daily_sales_gap VALUES
+('2024-01-01', 1000),
+('2024-01-02', 1500),
+('2024-01-04', 800),
+('2024-01-06', 2000),
+('2024-01-07', 1200);
+
+Input Data:
++------------+--------+
+| sale_date  | amount |
++------------+--------+
+| 2024-01-01 | 1000   |
+| 2024-01-02 | 1500   |
+| 2024-01-04 | 800    |
+| 2024-01-06 | 2000   |
+| 2024-01-07 | 1200   |
++------------+--------+
+
+Expected Output (from 2024-01-01 to 2024-01-07):
++------------+--------+
+| sale_date  | amount |
++------------+--------+
+| 2024-01-01 | 1000   |
+| 2024-01-02 | 1500   |
+| 2024-01-03 | 0      |
+| 2024-01-04 | 800    |
+| 2024-01-05 | 0      |
+| 2024-01-06 | 2000   |
+| 2024-01-07 | 1200   |
++------------+--------+
+
+================================================================================
+QUESTION 7: Cohort Analysis - User Signup Cohorts
+================================================================================
+
+Problem Statement:
+Analyze user activity by signup month cohort, showing the number of active 
+users in subsequent months.
+
+Schema:
+CREATE TABLE assignment_sql.users_cohort (
+    user_id INT PRIMARY KEY,
+    signup_date DATE
+);
+
+CREATE TABLE assignment_sql.user_activity (
+    activity_id INT PRIMARY KEY,
+    user_id INT,
+    activity_date DATE
+);
+
+INSERT INTO assignment_sql.users_cohort VALUES
+(1, '2024-01-15'),
+(2, '2024-01-20'),
+(3, '2024-02-10'),
+(4, '2024-02-25');
+
+INSERT INTO assignment_sql.user_activity VALUES
+(1, 1, '2024-01-20'),
+(2, 1, '2024-02-15'),
+(3, 1, '2024-03-10'),
+(4, 2, '2024-02-05'),
+(5, 3, '2024-02-20'),
+(6, 3, '2024-03-15'),
+(7, 4, '2024-03-01');
+
+Input Data - Users:
++---------+-------------+
+| user_id | signup_date |
++---------+-------------+
+| 1       | 2024-01-15  |
+| 2       | 2024-01-20  |
+| 3       | 2024-02-10  |
+| 4       | 2024-02-25  |
++---------+-------------+
+
+Input Data - Activity:
++-------------+---------+---------------+
+| activity_id | user_id | activity_date |
++-------------+---------+---------------+
+| 1           | 1       | 2024-01-20    |
+| 2           | 1       | 2024-02-15    |
+| 3           | 1       | 2024-03-10    |
+| 4           | 2       | 2024-02-05    |
+| 5           | 3       | 2024-02-20    |
+| 6           | 3       | 2024-03-15    |
+| 7           | 4       | 2024-03-01    |
++-------------+---------+---------------+
+
+Expected Output:
++--------------+---------+---------+---------+
+| cohort_month | month_0 | month_1 | month_2 |
++--------------+---------+---------+---------+
+| 2024-01      | 1       | 2       | 1       |
+| 2024-02      | 1       | 2       | 0       |
++--------------+---------+---------+---------+
+
+================================================================================
+QUESTION 8: Detect Suspicious Transactions
+================================================================================
+
+Problem Statement:
+Flag transactions that are more than 2 standard deviations from the customer's 
+average transaction amount.
+
+Schema:
+CREATE TABLE assignment_sql.transactions_susp (
+    txn_id INT PRIMARY KEY,
+    customer_id INT,
+    txn_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.transactions_susp VALUES
+(1, 101, '2024-01-01', 100),
+(2, 101, '2024-01-05', 120),
+(3, 101, '2024-01-10', 90),
+(4, 101, '2024-01-15', 110),
+(5, 101, '2024-01-20', 500),
+(6, 102, '2024-01-02', 200),
+(7, 102, '2024-01-08', 180),
+(8, 102, '2024-01-12', 220),
+(9, 102, '2024-01-18', 190);
+
+Input Data:
++--------+-------------+------------+--------+
+| txn_id | customer_id | txn_date   | amount |
++--------+-------------+------------+--------+
+| 1      | 101         | 2024-01-01 | 100    |
+| 2      | 101         | 2024-01-05 | 120    |
+| 3      | 101         | 2024-01-10 | 90     |
+| 4      | 101         | 2024-01-15 | 110    |
+| 5      | 101         | 2024-01-20 | 500    |
+| 6      | 102         | 2024-01-02 | 200    |
+| 7      | 102         | 2024-01-08 | 180    |
+| 8      | 102         | 2024-01-12 | 220    |
+| 9      | 102         | 2024-01-18 | 190    |
++--------+-------------+------------+--------+
+
+Expected Output:
++--------+-------------+--------+----------+----------+-------------+
+| txn_id | customer_id | amount | avg_amt  | std_dev  | is_suspicious|
++--------+-------------+--------+----------+----------+-------------+
+| 5      | 101         | 500    | 184.00   | 163.71   | Yes         |
++--------+-------------+--------+----------+----------+-------------+
+
+================================================================================
+QUESTION 9: Product Recommendation - Customers Who Bought X Also Bought Y
+================================================================================
+
+Problem Statement:
+For customers who bought 'Laptop', find other products they commonly purchase.
+
+Schema:
+CREATE TABLE assignment_sql.purchases_rec (
+    purchase_id INT PRIMARY KEY,
+    customer_id INT,
+    product_name VARCHAR(100),
+    purchase_date DATE
+);
+
+INSERT INTO assignment_sql.purchases_rec VALUES
+(1, 101, 'Laptop', '2024-01-01'),
+(2, 101, 'Mouse', '2024-01-01'),
+(3, 101, 'Keyboard', '2024-01-05'),
+(4, 102, 'Laptop', '2024-01-02'),
+(5, 102, 'Mouse', '2024-01-02'),
+(6, 103, 'Laptop', '2024-01-03'),
+(7, 103, 'Monitor', '2024-01-03'),
+(8, 104, 'Mouse', '2024-01-04'),
+(9, 104, 'Keyboard', '2024-01-04');
+
+Input Data:
++-------------+-------------+--------------+---------------+
+| purchase_id | customer_id | product_name | purchase_date |
++-------------+-------------+--------------+---------------+
+| 1           | 101         | Laptop       | 2024-01-01    |
+| 2           | 101         | Mouse        | 2024-01-01    |
+| 3           | 101         | Keyboard     | 2024-01-05    |
+| 4           | 102         | Laptop       | 2024-01-02    |
+| 5           | 102         | Mouse        | 2024-01-02    |
+| 6           | 103         | Laptop       | 2024-01-03    |
+| 7           | 103         | Monitor      | 2024-01-03    |
+| 8           | 104         | Mouse        | 2024-01-04    |
+| 9           | 104         | Keyboard     | 2024-01-04    |
++-------------+-------------+--------------+---------------+
+
+Expected Output:
++--------------+----------------------+
+| product_name | laptop_buyers_count  |
++--------------+----------------------+
+| Mouse        | 2                    |
+| Keyboard     | 1                    |
+| Monitor      | 1                    |
++--------------+----------------------+
+
+================================================================================
+QUESTION 10: Sliding Window - 7 Day Active Users
+================================================================================
+
+Problem Statement:
+Calculate the 7-day rolling count of unique active users.
+
+Schema:
+CREATE TABLE assignment_sql.user_logins_7d (
+    login_id INT PRIMARY KEY,
+    user_id INT,
+    login_date DATE
+);
+
+INSERT INTO assignment_sql.user_logins_7d VALUES
+(1, 101, '2024-01-01'),
+(2, 102, '2024-01-01'),
+(3, 101, '2024-01-02'),
+(4, 103, '2024-01-03'),
+(5, 101, '2024-01-05'),
+(6, 102, '2024-01-05'),
+(7, 104, '2024-01-06'),
+(8, 101, '2024-01-07'),
+(9, 103, '2024-01-07'),
+(10, 105, '2024-01-08');
+
+Input Data:
++----------+---------+------------+
+| login_id | user_id | login_date |
++----------+---------+------------+
+| 1        | 101     | 2024-01-01 |
+| 2        | 102     | 2024-01-01 |
+| 3        | 101     | 2024-01-02 |
+| 4        | 103     | 2024-01-03 |
+| 5        | 101     | 2024-01-05 |
+| 6        | 102     | 2024-01-05 |
+| 7        | 104     | 2024-01-06 |
+| 8        | 101     | 2024-01-07 |
+| 9        | 103     | 2024-01-07 |
+| 10       | 105     | 2024-01-08 |
++----------+---------+------------+
+
+Expected Output:
++------------+-------------------+
+| login_date | unique_users_7day |
++------------+-------------------+
+| 2024-01-01 | 2                 |
+| 2024-01-02 | 2                 |
+| 2024-01-03 | 3                 |
+| 2024-01-05 | 3                 |
+| 2024-01-06 | 4                 |
+| 2024-01-07 | 4                 |
+| 2024-01-08 | 5                 |
++------------+-------------------+
+
+================================================================================
+QUESTION 11: Revenue Attribution by First Touch
+================================================================================
+
+Problem Statement:
+Attribute revenue to the first marketing channel that acquired each customer.
+
+Schema:
+CREATE TABLE assignment_sql.marketing_touches (
+    touch_id INT PRIMARY KEY,
+    customer_id INT,
+    channel VARCHAR(50),
+    touch_date DATE
+);
+
+CREATE TABLE assignment_sql.customer_revenue (
+    customer_id INT PRIMARY KEY,
+    total_revenue DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.marketing_touches VALUES
+(1, 101, 'Email', '2024-01-01'),
+(2, 101, 'Social', '2024-01-05'),
+(3, 102, 'Search', '2024-01-02'),
+(4, 102, 'Email', '2024-01-10'),
+(5, 103, 'Social', '2024-01-03'),
+(6, 104, 'Search', '2024-01-04');
+
+INSERT INTO assignment_sql.customer_revenue VALUES
+(101, 500),
+(102, 800),
+(103, 300),
+(104, 600);
+
+Input Data - Marketing Touches:
++----------+-------------+---------+------------+
+| touch_id | customer_id | channel | touch_date |
++----------+-------------+---------+------------+
+| 1        | 101         | Email   | 2024-01-01 |
+| 2        | 101         | Social  | 2024-01-05 |
+| 3        | 102         | Search  | 2024-01-02 |
+| 4        | 102         | Email   | 2024-01-10 |
+| 5        | 103         | Social  | 2024-01-03 |
+| 6        | 104         | Search  | 2024-01-04 |
++----------+-------------+---------+------------+
+
+Input Data - Customer Revenue:
++-------------+---------------+
+| customer_id | total_revenue |
++-------------+---------------+
+| 101         | 500           |
+| 102         | 800           |
+| 103         | 300           |
+| 104         | 600           |
++-------------+---------------+
+
+Expected Output:
++---------+------------------+--------------+
+| channel | customer_count   | total_revenue|
++---------+------------------+--------------+
+| Email   | 1                | 500          |
+| Search  | 2                | 1400         |
+| Social  | 1                | 300          |
++---------+------------------+--------------+
+
+================================================================================
+QUESTION 12: Churn Prediction - Inactive Customers
+================================================================================
+
+Problem Statement:
+Identify customers who were active in the past but haven't made a purchase in 
+the last 60 days (assume current date is 2024-03-01).
+
+Schema:
+CREATE TABLE assignment_sql.customer_purchases (
+    purchase_id INT PRIMARY KEY,
+    customer_id INT,
+    purchase_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.customer_purchases VALUES
+(1, 101, '2024-01-15', 100),
+(2, 101, '2024-02-20', 150),
+(3, 102, '2024-01-10', 200),
+(4, 102, '2024-01-25', 180),
+(5, 103, '2024-02-15', 120),
+(6, 104, '2023-12-20', 300),
+(7, 104, '2024-01-05', 250);
+
+Input Data:
++-------------+-------------+---------------+--------+
+| purchase_id | customer_id | purchase_date | amount |
++-------------+-------------+---------------+--------+
+| 1           | 101         | 2024-01-15    | 100    |
+| 2           | 101         | 2024-02-20    | 150    |
+| 3           | 102         | 2024-01-10    | 200    |
+| 4           | 102         | 2024-01-25    | 180    |
+| 5           | 103         | 2024-02-15    | 120    |
+| 6           | 104         | 2023-12-20    | 300    |
+| 7           | 104         | 2024-01-05    | 250    |
++-------------+-------------+---------------+--------+
+
+Expected Output (inactive for 60+ days as of 2024-03-01):
++-------------+-------------------+------------------+
+| customer_id | last_purchase_date| days_since_last  |
++-------------+-------------------+------------------+
+| 102         | 2024-01-25        | 66               |
+| 104         | 2024-01-05        | 86               |
++-------------+-------------------+------------------+
+
+================================================================================
+QUESTION 13: Price Elasticity Analysis
+================================================================================
+
+Problem Statement:
+Calculate the percentage change in quantity sold when price changed.
+
+Schema:
+CREATE TABLE assignment_sql.price_history (
+    product_id INT,
+    price_date DATE,
+    price DECIMAL(10,2),
+    quantity_sold INT
+);
+
+INSERT INTO assignment_sql.price_history VALUES
+(1, '2024-01-01', 100.00, 50),
+(1, '2024-01-15', 90.00, 65),
+(1, '2024-02-01', 95.00, 55),
+(2, '2024-01-01', 50.00, 100),
+(2, '2024-01-15', 55.00, 85),
+(2, '2024-02-01', 50.00, 105);
+
+Input Data:
++------------+------------+--------+---------------+
+| product_id | price_date | price  | quantity_sold |
++------------+------------+--------+---------------+
+| 1          | 2024-01-01 | 100.00 | 50            |
+| 1          | 2024-01-15 | 90.00  | 65            |
+| 1          | 2024-02-01 | 95.00  | 55            |
+| 2          | 2024-01-01 | 50.00  | 100           |
+| 2          | 2024-01-15 | 55.00  | 85            |
+| 2          | 2024-02-01 | 50.00  | 105           |
++------------+------------+--------+---------------+
+
+Expected Output:
++------------+------------+-------------+--------------+-------------------+
+| product_id | price_date | price_change| qty_change   | elasticity        |
++------------+------------+-------------+--------------+-------------------+
+| 1          | 2024-01-15 | -10.00      | 30.00        | -3.00             |
+| 1          | 2024-02-01 | 5.56        | -15.38       | -2.77             |
+| 2          | 2024-01-15 | 10.00       | -15.00       | -1.50             |
+| 2          | 2024-02-01 | -9.09       | 23.53        | -2.59             |
++------------+------------+-------------+--------------+-------------------+
+
+================================================================================
+QUESTION 14: A/B Test Analysis
+================================================================================
+
+Problem Statement:
+Compare conversion rates between control and treatment groups.
+
+Schema:
+CREATE TABLE assignment_sql.ab_test (
+    user_id INT PRIMARY KEY,
+    test_group VARCHAR(20),
+    converted INT -- 1 for yes, 0 for no
+);
+
+INSERT INTO assignment_sql.ab_test VALUES
+(1, 'Control', 0),
+(2, 'Control', 1),
+(3, 'Control', 0),
+(4, 'Control', 0),
+(5, 'Control', 1),
+(6, 'Treatment', 1),
+(7, 'Treatment', 1),
+(8, 'Treatment', 0),
+(9, 'Treatment', 1),
+(10, 'Treatment', 1);
+
+Input Data:
++---------+------------+-----------+
+| user_id | test_group | converted |
++---------+------------+-----------+
+| 1       | Control    | 0         |
+| 2       | Control    | 1         |
+| 3       | Control    | 0         |
+| 4       | Control    | 0         |
+| 5       | Control    | 1         |
+| 6       | Treatment  | 1         |
+| 7       | Treatment  | 1         |
+| 8       | Treatment  | 0         |
+| 9       | Treatment  | 1         |
+| 10      | Treatment  | 1         |
++---------+------------+-----------+
+
+Expected Output:
++------------+------------+-----------+-----------------+
+| test_group | total_users| conversions| conversion_rate |
++------------+------------+-----------+-----------------+
+| Control    | 5          | 2          | 40.00           |
+| Treatment  | 5          | 4          | 80.00           |
++------------+------------+-----------+-----------------+
+
+================================================================================
+QUESTION 15: Revenue by Customer Lifetime Value Tier
+================================================================================
+
+Problem Statement:
+Categorize customers into LTV tiers and calculate total revenue per tier.
+
+Schema:
+CREATE TABLE assignment_sql.customer_ltv (
+    customer_id INT PRIMARY KEY,
+    total_spent DECIMAL(10,2),
+    signup_date DATE
+);
+
+INSERT INTO assignment_sql.customer_ltv VALUES
+(1, 5000, '2023-01-15'),
+(2, 1500, '2023-03-20'),
+(3, 800, '2023-05-10'),
+(4, 12000, '2023-02-01'),
+(5, 3000, '2023-04-15'),
+(6, 500, '2023-06-01');
+
+Input Data:
++-------------+-------------+-------------+
+| customer_id | total_spent | signup_date |
++-------------+-------------+-------------+
+| 1           | 5000        | 2023-01-15  |
+| 2           | 1500        | 2023-03-20  |
+| 3           | 800         | 2023-05-10  |
+| 4           | 12000       | 2023-02-01  |
+| 5           | 3000        | 2023-04-15  |
+| 6           | 500         | 2023-06-01  |
++-------------+-------------+-------------+
+
+Expected Output:
+Tiers: Low (<1000), Medium (1000-5000), High (>5000)
+
++----------+----------------+---------------+
+| ltv_tier | customer_count | total_revenue |
++----------+----------------+---------------+
+| Low      | 2              | 1300          |
+| Medium   | 3              | 9500          |
+| High     | 1              | 12000         |
++----------+----------------+---------------+
+
+================================================================================
+QUESTION 16: Overlap Detection - Booking Conflicts
+================================================================================
+
+Problem Statement:
+Find overlapping room bookings (potential double bookings).
+
+Schema:
+CREATE TABLE assignment_sql.room_bookings (
+    booking_id INT PRIMARY KEY,
+    room_id INT,
+    start_date DATE,
+    end_date DATE,
+    guest_name VARCHAR(100)
+);
+
+INSERT INTO assignment_sql.room_bookings VALUES
+(1, 101, '2024-01-10', '2024-01-15', 'Alice'),
+(2, 101, '2024-01-14', '2024-01-18', 'Bob'),
+(3, 101, '2024-01-20', '2024-01-25', 'Charlie'),
+(4, 102, '2024-01-10', '2024-01-12', 'Diana'),
+(5, 102, '2024-01-15', '2024-01-18', 'Eve');
+
+Input Data:
++------------+---------+------------+------------+------------+
+| booking_id | room_id | start_date | end_date   | guest_name |
++------------+---------+------------+------------+------------+
+| 1          | 101     | 2024-01-10 | 2024-01-15 | Alice      |
+| 2          | 101     | 2024-01-14 | 2024-01-18 | Bob        |
+| 3          | 101     | 2024-01-20 | 2024-01-25 | Charlie    |
+| 4          | 102     | 2024-01-10 | 2024-01-12 | Diana      |
+| 5          | 102     | 2024-01-15 | 2024-01-18 | Eve        |
++------------+---------+------------+------------+------------+
+
+Expected Output:
++---------+------------+--------+------------+--------+
+| room_id | booking1_id| guest1 | booking2_id| guest2 |
++---------+------------+--------+------------+--------+
+| 101     | 1          | Alice  | 2          | Bob    |
++---------+------------+--------+------------+--------+
+
+================================================================================
+QUESTION 17: Time-Based Comparison - Same Day Last Week
+================================================================================
+
+Problem Statement:
+Compare each day's sales with the same day of the previous week.
+
+Schema:
+CREATE TABLE assignment_sql.weekly_sales (
+    sale_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.weekly_sales VALUES
+('2024-01-01', 1000),
+('2024-01-02', 1200),
+('2024-01-03', 800),
+('2024-01-08', 1100),
+('2024-01-09', 1300),
+('2024-01-10', 950);
+
+Input Data:
++------------+--------+
+| sale_date  | amount |
++------------+--------+
+| 2024-01-01 | 1000   |
+| 2024-01-02 | 1200   |
+| 2024-01-03 | 800    |
+| 2024-01-08 | 1100   |
+| 2024-01-09 | 1300   |
+| 2024-01-10 | 950    |
++------------+--------+
+
+Expected Output:
++------------+--------+------------------+---------------+
+| sale_date  | amount | last_week_amount | week_over_week|
++------------+--------+------------------+---------------+
+| 2024-01-01 | 1000   | NULL             | NULL          |
+| 2024-01-02 | 1200   | NULL             | NULL          |
+| 2024-01-03 | 800    | NULL             | NULL          |
+| 2024-01-08 | 1100   | 1000             | 10.00         |
+| 2024-01-09 | 1300   | 1200             | 8.33          |
+| 2024-01-10 | 950    | 800              | 18.75         |
++------------+--------+------------------+---------------+
+
+================================================================================
+QUESTION 18: Pre-aggregated Sales
+================================================================================
+
+Problem Statement:
+Create a query that would be suitable for a materialized view showing daily 
+sales summary by product category.
+
+Schema:
+CREATE TABLE assignment_sql.sales_detail (
+    sale_id INT PRIMARY KEY,
+    product_id INT,
+    category VARCHAR(50),
+    sale_date DATE,
+    quantity INT,
+    unit_price DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.sales_detail VALUES
+(1, 1, 'Electronics', '2024-01-15', 2, 500),
+(2, 2, 'Electronics', '2024-01-15', 3, 100),
+(3, 3, 'Clothing', '2024-01-15', 5, 50),
+(4, 1, 'Electronics', '2024-01-16', 1, 500),
+(5, 3, 'Clothing', '2024-01-16', 8, 50);
+
+Input Data:
++---------+------------+-------------+------------+----------+------------+
+| sale_id | product_id | category    | sale_date  | quantity | unit_price |
++---------+------------+-------------+------------+----------+------------+
+| 1       | 1          | Electronics | 2024-01-15 | 2        | 500        |
+| 2       | 2          | Electronics | 2024-01-15 | 3        | 100        |
+| 3       | 3          | Clothing    | 2024-01-15 | 5        | 50         |
+| 4       | 1          | Electronics | 2024-01-16 | 1        | 500        |
+| 5       | 3          | Clothing    | 2024-01-16 | 8        | 50         |
++---------+------------+-------------+------------+----------+------------+
+
+Expected Output:
++------------+-------------+----------------+-------------+
+| sale_date  | category    | total_quantity | total_sales |
++------------+-------------+----------------+-------------+
+| 2024-01-15 | Electronics | 5              | 1300        |
+| 2024-01-15 | Clothing    | 5              | 250         |
+| 2024-01-16 | Electronics | 1              | 500         |
+| 2024-01-16 | Clothing    | 8              | 400         |
++------------+-------------+----------------+-------------+
+
+================================================================================
+QUESTION 19: Sales by Quarter
+================================================================================
+
+Problem Statement:
+Transform row data into columns showing quarterly sales.
+
+Schema:
+CREATE TABLE assignment_sql.quarterly_data (
+    product_id INT,
+    product_name VARCHAR(100),
+    sale_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.quarterly_data VALUES
+(1, 'Product A', '2024-01-15', 1000),
+(1, 'Product A', '2024-02-20', 1200),
+(1, 'Product A', '2024-04-10', 1500),
+(1, 'Product A', '2024-05-15', 1300),
+(2, 'Product B', '2024-01-10', 800),
+(2, 'Product B', '2024-04-25', 900),
+(2, 'Product B', '2024-07-10', 1100);
+
+Input Data:
++------------+--------------+------------+--------+
+| product_id | product_name | sale_date  | amount |
++------------+--------------+------------+--------+
+| 1          | Product A    | 2024-01-15 | 1000   |
+| 1          | Product A    | 2024-02-20 | 1200   |
+| 1          | Product A    | 2024-04-10 | 1500   |
+| 1          | Product A    | 2024-05-15 | 1300   |
+| 2          | Product B    | 2024-01-10 | 800    |
+| 2          | Product B    | 2024-04-25 | 900    |
+| 2          | Product B    | 2024-07-10 | 1100   |
++------------+--------------+------------+--------+
+
+Expected Output:
++--------------+------+------+------+------+
+| product_name | Q1   | Q2   | Q3   | Q4   |
++--------------+------+------+------+------+
+| Product A    | 2200 | 2800 | 0    | 0    |
+| Product B    | 800  | 900  | 1100 | 0    |
++--------------+------+------+------+------+
+
+================================================================================
+QUESTION 20: Consecutive Increases
+================================================================================
+
+Problem Statement:
+Find stocks that had price increases for 3 consecutive days.
+
+Schema:
+CREATE TABLE assignment_sql.stock_daily (
+    symbol VARCHAR(10),
+    trade_date DATE,
+    closing_price DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.stock_daily VALUES
+('AAPL', '2024-01-01', 150),
+('AAPL', '2024-01-02', 152),
+('AAPL', '2024-01-03', 155),
+('AAPL', '2024-01-04', 158),
+('AAPL', '2024-01-05', 156),
+('GOOGL', '2024-01-01', 2800),
+('GOOGL', '2024-01-02', 2820),
+('GOOGL', '2024-01-03', 2810),
+('GOOGL', '2024-01-04', 2830),
+('GOOGL', '2024-01-05', 2850);
+
+Input Data:
++--------+------------+---------------+
+| symbol | trade_date | closing_price |
++--------+------------+---------------+
+| AAPL   | 2024-01-01 | 150           |
+| AAPL   | 2024-01-02 | 152           |
+| AAPL   | 2024-01-03 | 155           |
+| AAPL   | 2024-01-04 | 158           |
+| AAPL   | 2024-01-05 | 156           |
+| GOOGL  | 2024-01-01 | 2800          |
+| GOOGL  | 2024-01-02 | 2820          |
+| GOOGL  | 2024-01-03 | 2810          |
+| GOOGL  | 2024-01-04 | 2830          |
+| GOOGL  | 2024-01-05 | 2850          |
++--------+------------+---------------+
+
+Expected Output:
++--------+-------------------+
+| symbol | consecutive_days  |
++--------+-------------------+
+| AAPL   | 4                 |
++--------+-------------------+
+
+================================================================================
+QUESTION 21: Multi-Level Hierarchy Sum
+================================================================================
+
+Problem Statement:
+Calculate total revenue for each node including all its descendants in an 
+org hierarchy.
+
+Schema:
+CREATE TABLE assignment_sql.org_hierarchy (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(50),
+    parent_id INT,
+    revenue DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.org_hierarchy VALUES
+(1, 'Company', NULL, 0),
+(2, 'Sales', 1, 500000),
+(3, 'Engineering', 1, 300000),
+(4, 'Sales East', 2, 200000),
+(5, 'Sales West', 2, 150000),
+(6, 'Backend', 3, 100000),
+(7, 'Frontend', 3, 80000);
+
+Input Data:
++---------+-------------+-----------+---------+
+| dept_id | dept_name   | parent_id | revenue |
++---------+-------------+-----------+---------+
+| 1       | Company     | NULL      | 0       |
+| 2       | Sales       | 1         | 500000  |
+| 3       | Engineering | 1         | 300000  |
+| 4       | Sales East  | 2         | 200000  |
+| 5       | Sales West  | 2         | 150000  |
+| 6       | Backend     | 3         | 100000  |
+| 7       | Frontend    | 3         | 80000   |
++---------+-------------+-----------+---------+
+
+Expected Output:
++-------------+---------------+-------------------+
+| dept_name   | direct_revenue| total_revenue     |
++-------------+---------------+-------------------+
+| Company     | 0             | 1330000           |
+| Sales       | 500000        | 850000            |
+| Engineering | 300000        | 480000            |
+| Sales East  | 200000        | 200000            |
+| Sales West  | 150000        | 150000            |
+| Backend     | 100000        | 100000            |
+| Frontend    | 80000         | 80000             |
++-------------+---------------+-------------------+
+
+================================================================================
+QUESTION 22: Deduplication with Priority
+================================================================================
+
+Problem Statement:
+Keep only one record per customer, preferring 'Premium' status over 'Regular'.
+
+Schema:
+CREATE TABLE assignment_sql.customer_dupes (
+    customer_id INT,
+    customer_name VARCHAR(100),
+    email VARCHAR(100),
+    status VARCHAR(20),
+    created_date DATE
+);
+
+INSERT INTO assignment_sql.customer_dupes VALUES
+(1, 'Alice', 'alice@email.com', 'Regular', '2024-01-01'),
+(2, 'Alice', 'alice@email.com', 'Premium', '2024-01-15'),
+(3, 'Bob', 'bob@email.com', 'Regular', '2024-01-05'),
+(4, 'Charlie', 'charlie@email.com', 'Premium', '2024-01-10'),
+(5, 'Charlie', 'charlie@email.com', 'Regular', '2024-01-20');
+
+Input Data:
++-------------+---------------+-------------------+---------+--------------+
+| customer_id | customer_name | email             | status  | created_date |
++-------------+---------------+-------------------+---------+--------------+
+| 1           | Alice         | alice@email.com   | Regular | 2024-01-01   |
+| 2           | Alice         | alice@email.com   | Premium | 2024-01-15   |
+| 3           | Bob           | bob@email.com     | Regular | 2024-01-05   |
+| 4           | Charlie       | charlie@email.com | Premium | 2024-01-10   |
+| 5           | Charlie       | charlie@email.com | Regular | 2024-01-20   |
++-------------+---------------+-------------------+---------+--------------+
+
+Expected Output:
++-------------+---------------+-------------------+---------+
+| customer_id | customer_name | email             | status  |
++-------------+---------------+-------------------+---------+
+| 2           | Alice         | alice@email.com   | Premium |
+| 3           | Bob           | bob@email.com     | Regular |
+| 4           | Charlie       | charlie@email.com | Premium |
++-------------+---------------+-------------------+---------+
+
+================================================================================
+QUESTION 23: Running Balance Calculation
+================================================================================
+
+Problem Statement:
+Calculate running balance for bank account transactions.
+
+Schema:
+CREATE TABLE assignment_sql.bank_transactions (
+    txn_id INT PRIMARY KEY,
+    account_id INT,
+    txn_date DATE,
+    txn_type VARCHAR(10),
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.bank_transactions VALUES
+(1, 101, '2024-01-01', 'CREDIT', 1000),
+(2, 101, '2024-01-05', 'DEBIT', 200),
+(3, 101, '2024-01-10', 'CREDIT', 500),
+(4, 101, '2024-01-15', 'DEBIT', 300),
+(5, 102, '2024-01-02', 'CREDIT', 2000),
+(6, 102, '2024-01-08', 'DEBIT', 500);
+
+Input Data:
++--------+------------+------------+----------+--------+
+| txn_id | account_id | txn_date   | txn_type | amount |
++--------+------------+------------+----------+--------+
+| 1      | 101        | 2024-01-01 | CREDIT   | 1000   |
+| 2      | 101        | 2024-01-05 | DEBIT    | 200    |
+| 3      | 101        | 2024-01-10 | CREDIT   | 500    |
+| 4      | 101        | 2024-01-15 | DEBIT    | 300    |
+| 5      | 102        | 2024-01-02 | CREDIT   | 2000   |
+| 6      | 102        | 2024-01-08 | DEBIT    | 500    |
++--------+------------+------------+----------+--------+
+
+Expected Output:
++------------+------------+----------+--------+-----------------+
+| account_id | txn_date   | txn_type | amount | running_balance |
++------------+------------+----------+--------+-----------------+
+| 101        | 2024-01-01 | CREDIT   | 1000   | 1000            |
+| 101        | 2024-01-05 | DEBIT    | 200    | 800             |
+| 101        | 2024-01-10 | CREDIT   | 500    | 1300            |
+| 101        | 2024-01-15 | DEBIT    | 300    | 1000            |
+| 102        | 2024-01-02 | CREDIT   | 2000   | 2000            |
+| 102        | 2024-01-08 | DEBIT    | 500    | 1500            |
++------------+------------+----------+--------+-----------------+
+
+================================================================================
+QUESTION 24:
+================================================================================
+
+Problem Statement:
+Calculate the median salary for each department without using built-in 
+median functions.
+
+Schema:
+CREATE TABLE assignment_sql.emp_median (
+    emp_id INT PRIMARY KEY,
+    department VARCHAR(50),
+    salary DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.emp_median VALUES
+(1, 'IT', 60000),
+(2, 'IT', 70000),
+(3, 'IT', 80000),
+(4, 'IT', 90000),
+(5, 'IT', 100000),
+(6, 'HR', 50000),
+(7, 'HR', 55000),
+(8, 'HR', 60000),
+(9, 'HR', 65000);
+
+Input Data:
++--------+------------+--------+
+| emp_id | department | salary |
++--------+------------+--------+
+| 1      | IT         | 60000  |
+| 2      | IT         | 70000  |
+| 3      | IT         | 80000  |
+| 4      | IT         | 90000  |
+| 5      | IT         | 100000 |
+| 6      | HR         | 50000  |
+| 7      | HR         | 55000  |
+| 8      | HR         | 60000  |
+| 9      | HR         | 65000  |
++--------+------------+--------+
+
+Expected Output:
++------------+---------------+
+| department | median_salary |
++------------+---------------+
+| IT         | 80000         |
+| HR         | 57500         |
++------------+---------------+
+
+================================================================================
+QUESTION 25: Customer Segmentation - RFM Analysis
+================================================================================
+
+Problem Statement:
+Segment customers based on Recency, Frequency, and Monetary value.
+
+Schema:
+CREATE TABLE assignment_sql.customer_rfm (
+    customer_id INT,
+    purchase_date DATE,
+    amount DECIMAL(10,2)
+);
+
+-- Assume current date is 2024-02-01 for recency calculation
+
+INSERT INTO assignment_sql.customer_rfm VALUES
+(101, '2024-01-25', 500),
+(101, '2024-01-15', 300),
+(101, '2024-01-05', 400),
+(102, '2024-01-28', 1000),
+(103, '2024-01-10', 200),
+(103, '2024-01-05', 150),
+(104, '2024-01-20', 800),
+(104, '2024-01-18', 600),
+(104, '2024-01-15', 700),
+(104, '2024-01-10', 500);
+
+Input Data:
++-------------+---------------+--------+
+| customer_id | purchase_date | amount |
++-------------+---------------+--------+
+| 101         | 2024-01-25    | 500    |
+| 101         | 2024-01-15    | 300    |
+| 101         | 2024-01-05    | 400    |
+| 102         | 2024-01-28    | 1000   |
+| 103         | 2024-01-10    | 200    |
+| 103         | 2024-01-05    | 150    |
+| 104         | 2024-01-20    | 800    |
+| 104         | 2024-01-18    | 600    |
+| 104         | 2024-01-15    | 700    |
+| 104         | 2024-01-10    | 500    |
++-------------+---------------+--------+
+
+Expected Output:
++-------------+---------+-----------+----------+---------+
+| customer_id | recency | frequency | monetary | segment |
++-------------+---------+-----------+----------+---------+
+| 101         | 7       | 3         | 1200     | Medium  |
+| 102         | 4       | 1         | 1000     | New     |
+| 103         | 22      | 2         | 350      | At Risk |
+| 104         | 12      | 4         | 2600     | Champion|
++-------------+---------+-----------+----------+---------+
+
+================================================================================
+QUESTION 26: Moving Sum with Custom Window
+================================================================================
+
+Problem Statement:
+Calculate 3-day moving sum of sales, including only the current day and 
+previous 2 days.
+
+Schema:
+CREATE TABLE assignment_sql.sales_moving (
+    sale_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.sales_moving VALUES
+('2024-01-01', 100),
+('2024-01-02', 150),
+('2024-01-03', 200),
+('2024-01-04', 120),
+('2024-01-05', 180),
+('2024-01-06', 160);
+
+Input Data:
++------------+--------+
+| sale_date  | amount |
++------------+--------+
+| 2024-01-01 | 100    |
+| 2024-01-02 | 150    |
+| 2024-01-03 | 200    |
+| 2024-01-04 | 120    |
+| 2024-01-05 | 180    |
+| 2024-01-06 | 160    |
++------------+--------+
+
+Expected Output:
++------------+--------+--------------+
+| sale_date  | amount | moving_sum_3 |
++------------+--------+--------------+
+| 2024-01-01 | 100    | 100          |
+| 2024-01-02 | 150    | 250          |
+| 2024-01-03 | 200    | 450          |
+| 2024-01-04 | 120    | 470          |
+| 2024-01-05 | 180    | 500          |
+| 2024-01-06 | 160    | 460          |
++------------+--------+--------------+
+
+================================================================================
+QUESTION 27: Gap Analysis - Finding Missing Entries
+================================================================================
+
+Problem Statement:
+Find days where no orders were placed between the first and last order dates.
+
+Schema:
+CREATE TABLE assignment_sql.order_gaps (
+    order_id INT PRIMARY KEY,
+    order_date DATE
+);
+
+INSERT INTO assignment_sql.order_gaps VALUES
+(1, '2024-01-01'),
+(2, '2024-01-01'),
+(3, '2024-01-02'),
+(4, '2024-01-04'),
+(5, '2024-01-04'),
+(6, '2024-01-06'),
+(7, '2024-01-07');
+
+Input Data:
++----------+------------+
+| order_id | order_date |
++----------+------------+
+| 1        | 2024-01-01 |
+| 2        | 2024-01-01 |
+| 3        | 2024-01-02 |
+| 4        | 2024-01-04 |
+| 5        | 2024-01-04 |
+| 6        | 2024-01-06 |
+| 7        | 2024-01-07 |
++----------+------------+
+
+Expected Output:
++--------------+
+| missing_date |
++--------------+
+| 2024-01-03   |
+| 2024-01-05   |
++--------------+
+
+================================================================================
+QUESTION 28: Cumulative Distribution
+================================================================================
+
+Problem Statement:
+Calculate what percentage of total sales each product contributes cumulatively 
+(running percentage).
+
+Schema:
+CREATE TABLE assignment_sql.product_cumulative (
+    product_id INT PRIMARY KEY,
+    product_name VARCHAR(100),
+    sales DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.product_cumulative VALUES
+(1, 'Product A', 5000),
+(2, 'Product B', 3000),
+(3, 'Product C', 1500),
+(4, 'Product D', 500);
+
+Input Data:
++------------+--------------+-------+
+| product_id | product_name | sales |
++------------+--------------+-------+
+| 1          | Product A    | 5000  |
+| 2          | Product B    | 3000  |
+| 3          | Product C    | 1500  |
+| 4          | Product D    | 500   |
++------------+--------------+-------+
+
+Expected Output (sorted by sales DESC):
++--------------+-------+------------------+-------------------+
+| product_name | sales | pct_of_total     | cumulative_pct    |
++--------------+-------+------------------+-------------------+
+| Product A    | 5000  | 50.00            | 50.00             |
+| Product B    | 3000  | 30.00            | 80.00             |
+| Product C    | 1500  | 15.00            | 95.00             |
+| Product D    | 500   | 5.00             | 100.00            |
++--------------+-------+------------------+-------------------+
+
+================================================================================
+QUESTION 29: Complex Filter with CASE and Aggregation
+================================================================================
+
+Problem Statement:
+Calculate revenue metrics with different discounts applied based on customer 
+loyalty tier.
+
+Schema:
+CREATE TABLE assignment_sql.orders_loyalty (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    loyalty_tier VARCHAR(20),
+    order_amount DECIMAL(10,2)
+);
+
+-- Discount: Gold = 20%, Silver = 10%, Bronze = 5%
+
+INSERT INTO assignment_sql.orders_loyalty VALUES
+(1, 101, 'Gold', 1000),
+(2, 101, 'Gold', 500),
+(3, 102, 'Silver', 800),
+(4, 102, 'Silver', 600),
+(5, 103, 'Bronze', 400),
+(6, 104, 'Gold', 1200);
+
+Input Data:
++----------+-------------+--------------+--------------+
+| order_id | customer_id | loyalty_tier | order_amount |
++----------+-------------+--------------+--------------+
+| 1        | 101         | Gold         | 1000         |
+| 2        | 101         | Gold         | 500          |
+| 3        | 102         | Silver       | 800          |
+| 4        | 102         | Silver       | 600          |
+| 5        | 103         | Bronze       | 400          |
+| 6        | 104         | Gold         | 1200         |
++----------+-------------+--------------+--------------+
+
+Expected Output:
++--------------+--------------+--------------+----------------+
+| loyalty_tier | gross_amount | discount_amt | net_amount     |
++--------------+--------------+--------------+----------------+
+| Gold         | 2700         | 540          | 2160           |
+| Silver       | 1400         | 140          | 1260           |
+| Bronze       | 400          | 20           | 380            |
++--------------+--------------+--------------+----------------+
+
+================================================================================
+QUESTION 30: Comprehensive Report - Order Analytics Dashboard
+================================================================================
+
+Problem Statement:
+Create a comprehensive order analytics report showing multiple metrics in 
+one query.
+
+Schema:
+CREATE TABLE assignment_sql.order_analytics (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    product_category VARCHAR(50),
+    amount DECIMAL(10,2),
+    status VARCHAR(20)
+);
+
+INSERT INTO assignment_sql.order_analytics VALUES
+(1, 101, '2024-01-15', 'Electronics', 1000, 'Completed'),
+(2, 101, '2024-01-20', 'Electronics', 500, 'Completed'),
+(3, 102, '2024-01-18', 'Clothing', 200, 'Completed'),
+(4, 102, '2024-01-22', 'Electronics', 800, 'Cancelled'),
+(5, 103, '2024-01-25', 'Clothing', 150, 'Completed'),
+(6, 103, '2024-01-28', 'Books', 50, 'Completed'),
+(7, 104, '2024-02-01', 'Electronics', 1200, 'Completed'),
+(8, 104, '2024-02-05', 'Clothing', 300, 'Pending');
+
+Input Data:
++----------+-------------+------------+------------------+--------+-----------+
+| order_id | customer_id | order_date | product_category | amount | status    |
++----------+-------------+------------+------------------+--------+-----------+
+| 1        | 101         | 2024-01-15 | Electronics      | 1000   | Completed |
+| 2        | 101         | 2024-01-20 | Electronics      | 500    | Completed |
+| 3        | 102         | 2024-01-18 | Clothing         | 200    | Completed |
+| 4        | 102         | 2024-01-22 | Electronics      | 800    | Cancelled |
+| 5        | 103         | 2024-01-25 | Clothing         | 150    | Completed |
+| 6        | 103         | 2024-01-28 | Books            | 50     | Completed |
+| 7        | 104         | 2024-02-01 | Electronics      | 1200   | Completed |
+| 8        | 104         | 2024-02-05 | Clothing         | 300    | Pending   |
++----------+-------------+------------+------------------+--------+-----------+
+
+Expected Output:
++-----------+------------------+--------------+-------------------+--------------+-----------------+------------+
+| month     | product_category | total_orders | completed_orders  | total_amount | completed_amount| avg_order  |
++-----------+------------------+--------------+-------------------+--------------+-----------------+------------+
+| 2024-01   | Electronics      | 3            | 2                 | 2300         | 1500            | 766.67     |
+| 2024-01   | Clothing         | 2            | 2                 | 350          | 350             | 175.00     |
+| 2024-01   | Books            | 1            | 1                 | 50           | 50              | 50.00      |
+| 2024-02   | Electronics      | 1            | 1                 | 1200         | 1200            | 1200.00    |
+| 2024-02   | Clothing         | 1            | 0                 | 300          | 0               | 300.00     |
++-----------+------------------+--------------+-------------------+--------------+-----------------+------------+
+

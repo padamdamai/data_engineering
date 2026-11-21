@@ -1,0 +1,1409 @@
+1.) Grab Rider – Third Completed Ride (Asked in Grab)
+
+Grab wants to analyze how quickly users become frequent riders.
+
+Given a table that records completed rides, write a SQL query to find each user’s third completed ride.
+
+If a user has multiple rides on the same day, the ride with the smaller ride_id should be considered earlier.
+
+Only include users who have completed at least three rides.
+
+Table: grab_rides
+
++------------------+----------+
+| ride_id          | INTEGER  |
+| user_id          | INTEGER  |
+| ride_date        | DATE     |
+| ride_status      | STRING   |
++------------------+----------+
+
+•	ride_status can be 'COMPLETED', 'CANCELLED', 'FAILED'
+•	Only COMPLETED rides should be considered
+
+
+Example Input:
+
++---------+---------+------------+-------------+
+| ride_id | user_id | ride_date  | ride_status |
++---------+---------+------------+-------------+
+| 201     | 1       | 2024-01-01 | COMPLETED   |
+| 202     | 1       | 2024-01-05 | CANCELLED   |
+| 203     | 1       | 2024-01-05 | COMPLETED   |
+| 204     | 1       | 2024-01-10 | COMPLETED   |
+| 205     | 2       | 2024-01-03 | COMPLETED   |
+| 206     | 2       | 2024-01-03 | COMPLETED   |
+| 207     | 2       | 2024-01-20 | COMPLETED   |
+| 208     | 3       | 2024-01-15 | COMPLETED   |
+| 209     | 3       | 2024-01-18 | COMPLETED   |
++---------+---------+------------+-------------+
+
+
+Example Output:
+
++---------+---------+------------+
+| user_id | ride_id | ride_date  |
++---------+---------+------------+
+| 1       | 204     | 2024-01-10 |
+| 2       | 207     | 2024-01-20 |
++---------+---------+------------+
+
+Explanation:
+
+User 1 (COMPLETED rides only):
+	•	201 → 2024-01-01
+	•	203 → 2024-01-05
+	•	204 → 2024-01-10 (3rd ride) 
+(CANCELLED ride 202 is ignored)
+
+User 2:
+	•	205 → 2024-01-03
+	•	206 → 2024-01-03
+(tie broken by smaller ride_id)
+	•	207 → 2024-01-20 (3rd ride) 
+
+User 3 has only 2 completed rides → excluded.
+
+CREATE TABLE medium_sql.grab_rides (
+    ride_id     INT,
+    user_id     INT,
+    ride_date   DATE,
+    ride_status TEXT
+);
+
+INSERT INTO medium_sql.grab_rides (ride_id, user_id, ride_date, ride_status) VALUES
+(201, 1, '2024-01-01', 'COMPLETED'),
+(202, 1, '2024-01-05', 'CANCELLED'),
+(203, 1, '2024-01-05', 'COMPLETED'),
+(204, 1, '2024-01-10', 'COMPLETED'),
+(205, 2, '2024-01-03', 'COMPLETED'),
+(206, 2, '2024-01-03', 'COMPLETED'),
+(207, 2, '2024-01-20', 'COMPLETED'),
+(208, 3, '2024-01-15', 'COMPLETED'),
+(209, 3, '2024-01-18', 'COMPLETED');
+
+===============================================================
+
+
+2.) International Shipment Percentage (Asked in Google)
+
+An e-commerce company wants to analyze how many shipments are international versus domestic.
+
+Given a table that records shipment details with origin and destination countries, write a SQL query to calculate the percentage of international shipments.
+
+A shipment is considered international if the origin country is different from the destination country.
+
+Round the percentage to 2 decimal places.
+
+Table: shipments
+
++------------------+----------+
+| shipment_id      | INTEGER  |
+| origin_country   | STRING   |
+| destination_country | STRING |
++------------------+----------+
+
+Example Input
+
++-------------+----------------+----------------------+
+| shipment_id | origin_country | destination_country  |
++-------------+----------------+----------------------+
+| 1           | USA            | USA                  |
+| 2           | USA            | CANADA               |
+| 3           | INDIA          | INDIA                |
+| 4           | INDIA          | UAE                  |
+| 5           | GERMANY        | FRANCE               |
+| 6           | FRANCE         | FRANCE               |
++-------------+----------------+----------------------+
+
+Example Output
+
++-----------------------------+
+| international_percentage   |
++-----------------------------+
+| 50.00                       |
++-----------------------------+
+
+Explanation
+	•	Total shipments = 6
+	•	International shipments:
+	•	USA → CANADA
+	•	INDIA → UAE
+	•	GERMANY → FRANCE
+→ 3 international shipments
+
+Percentage
+= (3 / 6) × 100
+= 50.00%
+
+
+CREATE TABLE medium_sql.shipments (
+    shipment_id          INT,
+    origin_country       TEXT,
+    destination_country  TEXT
+);
+
+INSERT INTO medium_sql.shipments (shipment_id, origin_country, destination_country) VALUES
+(1, 'USA',     'USA'),
+(2, 'USA',     'CANADA'),
+(3, 'INDIA',   'INDIA'),
+(4, 'INDIA',   'UAE'),
+(5, 'GERMANY', 'FRANCE'),
+(6, 'FRANCE',  'FRANCE');
+
+
+===============================================================
+
+3.) Immediate Subscription Activation Percentage (Asked in Uber)
+
+A SaaS company wants to analyze how users activate their subscriptions after signing up.
+
+Given a table that stores user subscription requests along with their signup date and preferred activation date, write a SQL query to find the percentage of users whose first subscription was activated immediately.
+
+Rules:
+	•	If the preferred activation date is the same as the signup date, the subscription is considered immediate.
+	•	Otherwise, it is considered scheduled.
+	•	Each user has exactly one first subscription, defined as the subscription with the earliest signup date for that user.
+
+Round the final percentage to 2 decimal places.
+
+Table: subscriptions
+
++-----------------------------+----------+
+| subscription_id             | INTEGER  |
+| user_id                     | INTEGER  |
+| signup_date                 | DATE     |
+| preferred_activation_date   | DATE     |
++-----------------------------+----------+
+
+•	subscription_id is the primary key
+•	preferred_activation_date is always on or after signup_date
+
+
+Example Input:
+
++------------------+---------+------------+-----------------------------+
+| subscription_id  | user_id | signup_date| preferred_activation_date  |
++------------------+---------+------------+-----------------------------+
+| 1                | 1       | 2023-01-01 | 2023-01-02                  |
+| 2                | 2       | 2023-01-02 | 2023-01-02                  |
+| 3                | 1       | 2023-01-11 | 2023-01-12                  |
+| 4                | 3       | 2023-01-24 | 2023-01-24                  |
+| 5                | 3       | 2023-01-21 | 2023-01-22                  |
+| 6                | 2       | 2023-01-11 | 2023-01-13                  |
+| 7                | 4       | 2023-01-09 | 2023-01-09                  |
++------------------+---------+------------+-----------------------------+
+
+Example Output:
+
++-------------------------------+
+| immediate_activation_percent  |
++-------------------------------+
+| 50.00                         |
++-------------------------------+
+
+
+Explanation:
+	•	User 1 → First subscription (ID 1) is scheduled
+	•	User 2 → First subscription (ID 2) is immediate
+	•	User 3 → First subscription (ID 5) is scheduled
+	•	User 4 → First subscription (ID 7) is immediate
+
+Out of 4 users, 2 activated immediately.
+
+Percentage
+= (2 / 4) × 100
+= 50.00%
+
+
+CREATE TABLE medium_sql.subscriptions (
+    subscription_id           INT,
+    user_id                   INT,
+    signup_date               DATE,
+    preferred_activation_date DATE
+);
+
+INSERT INTO medium_sql.subscriptions (subscription_id, user_id, signup_date, preferred_activation_date) VALUES
+(1, 1, '2023-01-01', '2023-01-02'),
+(2, 2, '2023-01-02', '2023-01-02'),
+(3, 1, '2023-01-11', '2023-01-12'),
+(4, 3, '2023-01-24', '2023-01-24'),
+(5, 3, '2023-01-21', '2023-01-22'),
+(6, 2, '2023-01-11', '2023-01-13'),
+(7, 4, '2023-01-09', '2023-01-09');
+
+===============================================================
+
+4.) Time Spent on Learning Activities (Asked in Microsoft)
+
+An online learning platform tracks how much time students spend on different types of learning activities.
+
+Given a table that records the time (in minutes) spent by students on various activity types, write a SQL query to calculate the total time spent per activity type.
+
+Return the result as a single-row pivoted output, where each activity type appears as a separate column.
+
+Table: learning_activity_logs
+
++------------------+----------+
+| student_id       | INTEGER  |
+| activity_type    | STRING   |
+| time_spent_min   | INTEGER  |
++------------------+----------+
+
+•	activity_type can be:
+•	'VIDEO'
+•	'QUIZ'
+•	'ASSIGNMENT'
+
+Example Input:
+
++------------+---------------+----------------+
+| student_id | activity_type | time_spent_min |
++------------+---------------+----------------+
+| 1          | VIDEO         | 30             |
+| 1          | QUIZ          | 15             |
+| 2          | VIDEO         | 45             |
+| 2          | ASSIGNMENT    | 60             |
+| 3          | VIDEO         | 20             |
+| 3          | QUIZ          | 25             |
+| 3          | ASSIGNMENT    | 40             |
+| 4          | QUIZ          | 10             |
++------------+---------------+----------------+
+
+Example Output:
+
++------------+-----------+---------------+
+| video_min  | quiz_min  | assignment_min|
++------------+-----------+---------------+
+| 95         | 50        | 100           |
++------------+-----------+---------------+
+
+Explanation:
+	•	VIDEO time = 30 + 45 + 20 = 95 minutes
+	•	QUIZ time = 15 + 25 + 10 = 50 minutes
+	•	ASSIGNMENT time = 60 + 40 = 100 minutes
+
+Each activity type is displayed as a separate column, showcasing a pivot-style output.
+
+--SQL Setup
+
+CREATE TABLE medium_sql.learning_activity_logs (
+    student_id     INT,
+    activity_type  TEXT,
+    time_spent_min INT
+);
+
+INSERT INTO medium_sql.learning_activity_logs (student_id, activity_type, time_spent_min) VALUES
+(1, 'VIDEO', 30),
+(1, 'QUIZ', 15),
+(2, 'VIDEO', 45),
+(2, 'ASSIGNMENT', 60),
+(3, 'VIDEO', 20),
+(3, 'QUIZ', 25),
+(3, 'ASSIGNMENT', 40),
+(4, 'QUIZ', 10);
+
+
+===============================================================
+
+5.) Customers Who Never Purchased a Specific Clothing Brand (Asked in Meta)
+
+A retail chain sells clothing products from multiple brands to customers across different stores.
+
+Each time a customer purchases an item, the transaction is recorded along with the product and brand information.
+
+Write a SQL query to find the names of all customers who have never purchased any product from the clothing brand "Fabulous".
+
+Tables and Schema
+
+Table: customers
+
++------------------+----------+
+| customer_id      | INTEGER  |
+| first_name       | VARCHAR  |
+| last_name        | VARCHAR  |
+| state            | VARCHAR  |
+| birthdate        | DATE     |
+| gender           | VARCHAR  |
++------------------+----------+
+
+Table: products
+
++------------------+----------+
+| product_id       | INTEGER  |
+| product_class_id | INTEGER  |
+| brand_name       | VARCHAR  |
+| product_name     | VARCHAR  |
++------------------+----------+
+
+brand_name represents a clothing brand
+Example: Fabulous, UrbanWear, StyleHub
+
+Table: sales
+
++------------------+----------+
+| sale_id          | INTEGER  |
+| product_id       | INTEGER  |
+| customer_id      | INTEGER  |
+| store_id         | INTEGER  |
+| store_sales      | DECIMAL  |
+| transaction_date | DATE     |
++------------------+----------+
+
+ Example Input Data
+
+customers
+
++-------------+------------+-----------+-------+------------+--------+
+| customer_id | first_name | last_name | state | birthdate  | gender |
++-------------+------------+-----------+-------+------------+--------+
+| 1           | John       | Smith     | CA    | 1990-05-10 | M      |
+| 2           | Alice      | Brown     | NY    | 1988-03-22 | F      |
+| 3           | Bob        | Taylor    | TX    | 1995-07-18 | M      |
+| 4           | Emma       | Wilson    | FL    | 1992-11-02 | F      |
++-------------+------------+-----------+-------+------------+--------+
+
+products
+
++------------+------------------+------------+----------------+
+| product_id | product_class_id | brand_name | product_name   |
++------------+------------------+------------+----------------+
+| 101        | 10               | Fabulous   | Denim Jacket   |
+| 102        | 11               | UrbanWear  | Graphic Tee    |
+| 103        | 12               | StyleHub   | Summer Dress   |
+| 104        | 10               | Fabulous   | Leather Jacket |
++------------+------------------+------------+----------------+
+
+sales
+
++---------+------------+-------------+----------+-------------+------------------+
+| sale_id | product_id | customer_id | store_id | store_sales | transaction_date|
++---------+------------+-------------+----------+-------------+------------------+
+| 1001    | 101        | 1           | 10       | 89.99       | 2024-01-10       |
+| 1002    | 102        | 2           | 11       | 29.99       | 2024-01-11       |
+| 1003    | 103        | 2           | 11       | 59.99       | 2024-01-15       |
+| 1004    | 104        | 3           | 12       | 129.99      | 2024-01-20       |
++---------+------------+-------------+----------+-------------+------------------+
+
+
+Expected Output
+
++------------+-----------+
+| first_name | last_name |
++------------+-----------+
+| Alice      | Brown     |
+| Emma       | Wilson    |
++------------+-----------+
+
+
+Explanation
+	•	John Smith purchased a Fabulous denim jacket 
+	•	Bob Taylor purchased a Fabulous leather jacket 
+	•	Alice Brown purchased only UrbanWear and StyleHub clothing 
+	•	Emma Wilson has made no clothing purchases → also qualifies 
+
+Therefore, Alice Brown and Emma Wilson have never purchased any clothing item from the brand “Fabulous”.
+
+SQL Setup 
+
+CREATE TABLE medium_sql.customers (
+    customer_id INT,
+    first_name  VARCHAR(50),
+    last_name   VARCHAR(50),
+    state       VARCHAR(10),
+    birthdate   DATE,
+    gender      VARCHAR(10)
+);
+
+CREATE TABLE medium_sql.products (
+    product_id        INT,
+    product_class_id  INT,
+    brand_name        VARCHAR(50),
+    product_name      VARCHAR(50)
+);
+
+CREATE TABLE medium_sql.sales (
+    sale_id          INT,
+    product_id       INT,
+    customer_id      INT,
+    store_id         INT,
+    store_sales      DECIMAL(10,2),
+    transaction_date DATE
+);
+
+INSERT INTO medium_sql.customers VALUES
+(1, 'John',  'Smith',  'CA', '1990-05-10', 'M'),
+(2, 'Alice', 'Brown',  'NY', '1988-03-22', 'F'),
+(3, 'Bob',   'Taylor', 'TX', '1995-07-18', 'M'),
+(4, 'Emma',  'Wilson', 'FL', '1992-11-02', 'F');
+
+INSERT INTO medium_sql.products VALUES
+(101, 10, 'Fabulous',  'Denim Jacket'),
+(102, 11, 'UrbanWear', 'Graphic Tee'),
+(103, 12, 'StyleHub',  'Summer Dress'),
+(104, 10, 'Fabulous',  'Leather Jacket');
+
+INSERT INTO medium_sql.sales VALUES
+(1001, 101, 1, 10, 89.99,  '2024-01-10'),
+(1002, 102, 2, 11, 29.99,  '2024-01-11'),
+(1003, 103, 2, 11, 59.99,  '2024-01-15'),
+(1004, 104, 3, 12, 129.99, '2024-01-20');
+
+===========================================================================
+
+6.) Second Most Recent Activity (Asked in Accenture)
+
+A platform stores user activities with a start and end date.
+For each user, return their second most recent activity.
+
+-> If a user has only 1 activity, return that activity as-is.
+
+Table: UserActivity
++-----------+----------+
+| username  | VARCHAR  |
+| activity  | VARCHAR  |
+| startDate | DATE     |
+| endDate   | DATE     |
++-----------+----------+
+
+Example Input:
++----------+----------+------------+------------+
+| username | activity | startDate  | endDate    |
++----------+----------+------------+------------+
+| Alice    | Travel   | 2020-02-12 | 2020-02-20 |
+| Alice    | Dancing  | 2020-02-21 | 2020-02-23 |
+| Alice    | Travel   | 2020-02-24 | 2020-02-28 |
+| Bob      | Travel   | 2020-02-11 | 2020-02-18 |
++----------+----------+------------+------------+
+
+Example Output:
++----------+----------+------------+------------+
+| username | activity | startDate  | endDate    |
++----------+----------+------------+------------+
+| Alice    | Dancing  | 2020-02-21 | 2020-02-23 |
+| Bob      | Travel   | 2020-02-11 | 2020-02-18 |
++----------+----------+------------+------------+
+
+Explanation:
+- Alice has 3 activities, so her second most recent activity is Dancing.
+- Bob has 1 activity, so his only activity is Travel.
+
+-- SQL Setup
+
+CREATE TABLE medium_sql.useractivity (
+    username  VARCHAR(255),
+    activity  VARCHAR(255),
+    startDate DATE,
+    endDate   DATE
+);
+
+INSERT INTO medium_sql.useractivity (username, activity, startDate, endDate) VALUES
+('Alice', 'Travel', '2020-02-12', '2020-02-20'),
+('Alice', 'Dancing', '2020-02-21', '2020-02-23'),
+('Alice', 'Travel', '2020-02-24', '2020-02-28'),
+('Bob', 'Travel', '2020-02-11', '2020-02-18');
+
+===============================================================
+
+7.) Find Companies With at Least 2 Bilingual Users (English + German) (Asked in McKinsey)
+
+A company wants to identify organizations that have at least two users who can speak both English and German.
+
+Each row in the table represents a language known by a user in a company.
+
+Write a SQL query to return the company_id values where at least 2 different users speak both English and German.
+
+Table: company_users
++------------+---------+----------+
+| company_id | user_id | language |
++------------+---------+----------+
+
+Example Input
++------------+---------+----------+
+| company_id | user_id | language |
++------------+---------+----------+
+| 1          | 1       | English  |
+| 1          | 1       | German   |
+| 1          | 2       | English  |
+| 1          | 3       | German   |
+| 1          | 3       | English  |
+| 1          | 4       | English  |
+| 2          | 5       | English  |
+| 2          | 5       | German   |
+| 2          | 5       | Spanish  |
+| 2          | 6       | German   |
+| 2          | 6       | Spanish  |
+| 2          | 7       | English  |
++------------+---------+----------+
+
+Expected Output
++------------+
+| company_id |
++------------+
+| 1          |
++------------+
+
+Explanation
+
+Company 1 has two users who speak both languages:
+• User 1 → English + German
+• User 3 → English + German
+
+Company 2 has only one such user (User 5).
+So only company 1 qualifies.
+
+-- SQL Setup
+CREATE TABLE medium_sql.company_users (
+    company_id INT,
+    user_id INT,
+    language VARCHAR(20)
+);
+
+INSERT INTO medium_sql.company_users (company_id, user_id, language) VALUES
+(1, 1, 'English'),
+(1, 1, 'German'),
+(1, 2, 'English'),
+(1, 3, 'German'),
+(1, 3, 'English'),
+(1, 4, 'English'),
+(2, 5, 'English'),
+(2, 5, 'German'),
+(2, 5, 'Spanish'),
+(2, 6, 'German'),
+(2, 6, 'Spanish'),
+(2, 7, 'English');
+
+===============================================================
+
+8.) App Analytics: Next-Day Purchase After Install (Asked in Zomato)
+
+An app analytics table stores user events such as app-installed and app-purchase along with event date and country.
+
+Your task is to count the number of users who:
+
+-> installed the app on a given day
+-> and made a purchase on the very next day (install_date + 1)
+
+
+Table: activity
++------------+----------+
+| user_id    | VARCHAR  |
+| event_name | VARCHAR  |
+| event_date | DATE     |
+| country    | VARCHAR  |
++------------+----------+
+
+Example Input
++---------+--------------+------------+---------+
+| user_id  | event_name   | event_date | country |
++---------+--------------+------------+---------+
+| 1        | app-installed | 2022-01-01 | India   |
+| 1        | app-purchase  | 2022-01-02 | India   |
+| 2        | app-installed | 2022-01-01 | USA     |
+| 3        | app-installed | 2022-01-01 | USA     |
+| 3        | app-purchase  | 2022-01-03 | USA     |
+| 4        | app-installed | 2022-01-03 | India   |
+| 4        | app-purchase  | 2022-01-03 | India   |
+| 5        | app-installed | 2022-01-03 | SL      |
+| 5        | app-purchase  | 2022-01-03 | SL      |
+| 6        | app-installed | 2022-01-04 | China   |
+| 6        | app-purchase  | 2022-01-04 | China   |
++---------+--------------+------------+---------+
+
+Expected Output
++----------------------+
+| next_day_buyers_count |
++----------------------+
+| 1                    |
++----------------------+
+
+Explanation
+	•	User 1 installed on 2022-01-01 and purchased on 2022-01-02  (next day)
+	•	User 3 purchased on 2022-01-03 (not next day) 
+	•	User 4/5/6 purchased on the same day as install 
+	•	User 2 never purchased 
+
+-- SQL Setup
+CREATE TABLE medium_sql.app_activity (
+    user_id VARCHAR(20),
+    event_name VARCHAR(20),
+    event_date DATE,
+    country VARCHAR(20)
+);
+
+INSERT INTO medium_sql.app_activity VALUES
+(1,'app-installed','2022-01-01','India'),
+(1,'app-purchase','2022-01-02','India'),
+(2,'app-installed','2022-01-01','USA'),
+(3,'app-installed','2022-01-01','USA'),
+(3,'app-purchase','2022-01-03','USA'),
+(4,'app-installed','2022-01-03','India'),
+(4,'app-purchase','2022-01-03','India'),
+(5,'app-installed','2022-01-03','SL'),
+(5,'app-purchase','2022-01-03','SL'),
+(6,'app-installed','2022-01-04','China'),
+(6,'app-purchase','2022-01-04','China');
+
+===============================================================
+
+9.) A hotel booking platform wants to track demand trends by city. (Asked in Airbnb)
+
+Each booking can include multiple rooms and multiple nights, and not all bookings are actually revenue-generating (some are cancelled/refunded). The analytics team defines a key metric:
+
+> Paid Room Nights = rooms_booked × nights
+Only include bookings where:
+	•	booking_status = 'CONFIRMED'
+	•	payment_status = 'PAID'
+
+Write a SQL query to compute the 7-day rolling average of Paid Room Nights for each city, ordered by date.
+
+Output requirements
+Return:
+	•	city
+	•	booking_date
+	•	paid_room_nights
+	•	rolling_avg_7d_paid_room_nights
+
+Rules:
+	•	The rolling window is current day + previous 6 days
+	•	If a city has missing dates (no bookings), treat missing days as 0
+	•	Round rolling average to 2 decimals
+
+Table hotels:
++----------+-----------+
+| hotel_id | city      |
++----------+-----------+
+| 1        | Mumbai    |
+| 2        | Mumbai    |
+| 3        | Bengaluru |
++----------+-----------+
+
+Table bookings:
++-----------+----------+--------+-------------+-------------+--------------+-------------+----------------+
+| booking_id| hotel_id | user_id| booking_date| checkin_date| checkout_date | rooms_booked| booking_status |
++-----------+----------+--------+-------------+-------------+--------------+-------------+----------------+
+| 101       | 1        | 9001   | 2025-01-01  | 2025-01-03  | 2025-01-05    | 2           | CONFIRMED      |
+| 102       | 2        | 9002   | 2025-01-02  | 2025-01-02  | 2025-01-03    | 1           | CONFIRMED      |
+| 103       | 1        | 9003   | 2025-01-04  | 2025-01-10  | 2025-01-12    | 1           | CANCELLED      |
+| 104       | 3        | 9004   | 2025-01-01  | 2025-01-01  | 2025-01-04    | 1           | CONFIRMED      |
+| 105       | 3        | 9005   | 2025-01-03  | 2025-01-03  | 2025-01-04    | 3           | CONFIRMED      |
++-----------+----------+--------+-------------+-------------+--------------+-------------+----------------+
+
+Table payments:
++-----------+------------+---------------+--------+
+| payment_id| booking_id | payment_status| amount |
++-----------+------------+---------------+--------+
+| 501       | 101        | PAID          | 20000  |
+| 502       | 102        | PAID          | 6000   |
+| 503       | 103        | REFUNDED      | 0      |
+| 504       | 104        | PAID          | 12000  |
+| 505       | 105        | PAID          | 15000  |
++-----------+------------+---------------+--------+
+
+Metric Definition
+For each booking:
+	•	nights = checkout_date - checkin_date
+	•	paid_room_nights = rooms_booked × nights
+	•	Count only if booking is CONFIRMED and payment is PAID
+
+Expected Output (Sample)
+(illustrative output for dates 2025-01-01 to 2025-01-04)
+
++-----------+-------------+-----------------+------------------------------+
+| city      | booking_date| paid_room_nights| rolling_avg_7d_paid_room_nights |
++-----------+-------------+-----------------+------------------------------+
+| Bengaluru | 2025-01-01  | 3               | 3.00                         |
+| Bengaluru | 2025-01-02  | 0               | 1.50                         |
+| Bengaluru | 2025-01-03  | 3               | 2.00                         |
+| Bengaluru | 2025-01-04  | 0               | 1.50                         |
+| Mumbai    | 2025-01-01  | 4               | 4.00                         |
+| Mumbai    | 2025-01-02  | 1               | 2.50                         |
+| Mumbai    | 2025-01-03  | 0               | 1.67                         |
+| Mumbai    | 2025-01-04  | 0               | 1.25                         |
++-----------+-------------+-----------------+------------------------------+
+
+-- SQL Setup
+
+CREATE TABLE medium_sql.hotels (
+  hotel_id INT,
+  city VARCHAR(50)
+);
+
+CREATE TABLE medium_sql.bookings (
+  booking_id INT,
+  hotel_id INT,
+  user_id INT,
+  booking_date DATE,
+  checkin_date DATE,
+  checkout_date DATE,
+  rooms_booked INT,
+  booking_status VARCHAR(20)
+);
+
+CREATE TABLE medium_sql.payments (
+  payment_id INT,
+  booking_id INT,
+  payment_status VARCHAR(20),
+  amount DECIMAL(12,2)
+);
+
+INSERT INTO medium_sql.hotels VALUES
+(1,'Mumbai'),
+(2,'Mumbai'),
+(3,'Bengaluru');
+
+INSERT INTO medium_sql.bookings VALUES
+(101,1,9001,'2025-01-01','2025-01-03','2025-01-05',2,'CONFIRMED'),
+(102,2,9002,'2025-01-02','2025-01-02','2025-01-03',1,'CONFIRMED'),
+(103,1,9003,'2025-01-04','2025-01-10','2025-01-12',1,'CANCELLED'),
+(104,3,9004,'2025-01-01','2025-01-01','2025-01-04',1,'CONFIRMED'),
+(105,3,9005,'2025-01-03','2025-01-03','2025-01-04',3,'CONFIRMED');
+
+INSERT INTO medium_sql.payments VALUES
+(501,101,'PAID',20000),
+(502,102,'PAID',6000),
+(503,103,'REFUNDED',0),
+(504,104,'PAID',12000),
+(505,105,'PAID',15000);
+
+===============================================================
+
+10.) E-commerce: Customers with Consecutive Month Purchases (Asked in Flipkart)
+
+An e-commerce platform wants to identify loyal customers who made purchases in consecutive months.
+
+Write a SQL query to find all customers who made purchases in at least two consecutive months (e.g., January and February, or February and March).
+
+For each qualifying customer, return:
+	•	customer_id
+	•	first_month (the earlier month)
+	•	second_month (the consecutive month)
+
+Table: orders
++-------------+------------+----------+
+| order_id    | customer_id| order_date|
++-------------+------------+----------+
+| 1001        | 101        | 2024-01-15|
+| 1002        | 101        | 2024-02-20|
+| 1003        | 101        | 2024-04-10|
+| 1004        | 102        | 2024-01-05|
+| 1005        | 102        | 2024-02-18|
+| 1006        | 102        | 2024-03-22|
+| 1007        | 103        | 2024-01-10|
+| 1008        | 103        | 2024-03-15|
+| 1009        | 104        | 2024-02-01|
+| 1010        | 104        | 2024-04-05|
++-------------+------------+----------+
+
+Expected Output
++------------+-------------+--------------+
+| customer_id| first_month | second_month |
++------------+-------------+--------------+
+| 101        | 2024-01     | 2024-02      |
+| 102        | 2024-01     | 2024-02      |
+| 102        | 2024-02     | 2024-03      |
++------------+-------------+--------------+
+
+Explanation
+	•	Customer 101: Purchased in Jan, Feb (consecutive), and Apr (not consecutive with Feb)
+	•	Customer 102: Purchased in Jan, Feb, Mar (two consecutive pairs: Jan-Feb and Feb-Mar)
+	•	Customer 103: Purchased in Jan and Mar (not consecutive)
+	•	Customer 104: Purchased in Feb and Apr (not consecutive)
+
+-- SQL Setup
+CREATE TABLE medium_sql.orders (
+    order_id INT,
+    customer_id INT,
+    order_date DATE
+);
+
+INSERT INTO medium_sql.orders VALUES
+(1001, 101, '2024-01-15'),
+(1002, 101, '2024-02-20'),
+(1003, 101, '2024-04-10'),
+(1004, 102, '2024-01-05'),
+(1005, 102, '2024-02-18'),
+(1006, 102, '2024-03-22'),
+(1007, 103, '2024-01-10'),
+(1008, 103, '2024-03-15'),
+(1009, 104, '2024-02-01'),
+(1010, 104, '2024-04-05');
+
+===============================================================
+
+11.) Social Media: Users Who Never Interacted (Asked in LinkedIn)
+
+A social media platform tracks user interactions (likes, comments, shares) between users.
+
+Write a SQL query to find pairs of users who have NEVER interacted with each other (neither user has ever interacted with the other).
+
+Note: Interactions are bidirectional - if User A likes User B post, that counts as an interaction between A and B.
+
+Table: interactions
++------------+----------+------------+-------------+
+| interaction_id | user_id | target_user_id | interaction_type |
++------------+----------+------------+-------------+
+| 1          | 101      | 102        | like        |
+| 2          | 101      | 103        | comment     |
+| 3          | 102      | 101        | share       |
+| 4          | 103      | 104        | like        |
+| 5          | 104      | 103        | comment     |
+| 6          | 105      | 106        | like        |
++------------+----------+------------+-------------+
+
+Table: users
++----------+------------+
+| user_id  | username   |
++----------+------------+
+| 101      | Alice      |
+| 102      | Bob        |
+| 103      | Charlie    |
+| 104      | Diana      |
+| 105      | Eve        |
+| 106      | Frank      |
++----------+------------+
+
+Expected Output
++----------+------------+----------+------------+
+| user1_id | username1  | user2_id | username2  |
++----------+------------+----------+------------+
+| 101      | Alice      | 104      | Diana      |
+| 101      | Alice      | 105      | Eve        |
+| 101      | Alice      | 106      | Frank      |
+| 102      | Bob        | 104      | Diana      |
+| 102      | Bob        | 105      | Eve        |
+| 102      | Bob        | 106      | Frank      |
+| 103      | Charlie    | 105      | Eve        |
+| 103      | Charlie    | 106      | Frank      |
+| 104      | Diana      | 105      | Eve        |
+| 104      | Diana      | 106      | Frank      |
++----------+------------+----------+------------+
+
+Explanation
+	•	User pairs (101,102), (101,103), (102,101), (103,104), (104,103), (105,106) have interacted
+	•	All other pairs have never interacted
+	•	Note: (101,102) and (102,101) are the same pair, so we only show unique pairs
+
+-- SQL Setup
+CREATE TABLE medium_sql.users (
+    user_id INT,
+    username VARCHAR(50)
+);
+
+CREATE TABLE medium_sql.interactions (
+    interaction_id INT,
+    user_id INT,
+    target_user_id INT,
+    interaction_type VARCHAR(20)
+);
+
+INSERT INTO medium_sql.users VALUES
+(101, 'Alice'),
+(102, 'Bob'),
+(103, 'Charlie'),
+(104, 'Diana'),
+(105, 'Eve'),
+(106, 'Frank');
+
+INSERT INTO medium_sql.interactions VALUES
+(1, 101, 102, 'like'),
+(2, 101, 103, 'comment'),
+(3, 102, 101, 'share'),
+(4, 103, 104, 'like'),
+(5, 104, 103, 'comment'),
+(6, 105, 106, 'like');
+
+==============================================================================
+
+12.) Banking: Account Balance Tracking with Transaction Types (Asked in JP Morgan)
+
+A banking system needs to track account balances after each transaction, considering different transaction types (DEPOSIT, WITHDRAWAL, TRANSFER_OUT, TRANSFER_IN).
+
+Write a SQL query to calculate the running balance for each account after each transaction, showing:
+	•	account_id
+	•	transaction_id
+	•	transaction_date
+	•	transaction_type
+	•	amount
+	•	running_balance (calculated balance after this transaction)
+
+Note: DEPOSIT and TRANSFER_IN increase balance, WITHDRAWAL and TRANSFER_OUT decrease balance.
+
+Table: transactions
++----------------+------------+------------------+------------------+--------+
+|| transaction_id| account_id | transaction_date | transaction_type | amount |
++----------------+------------+------------------+------------------+--------+
+|| 1             | 101        | 2024-01-01      | DEPOSIT          | 1000   |
+|| 2             | 101        | 2024-01-02      | WITHDRAWAL       | 200    |
+|| 3             | 101        | 2024-01-03      | TRANSFER_OUT     | 300    |
+|| 4             | 102        | 2024-01-01      | DEPOSIT          | 500    |
+|| 5             | 101        | 2024-01-04      | TRANSFER_IN      | 150    |
+|| 6             | 102        | 2024-01-02      | WITHDRAWAL       | 100    |
+|| 7             | 101        | 2024-01-05      | DEPOSIT          | 500    |
++----------------+------------+------------------+------------------+--------+
+
+Expected Output
++------------+----------------+------------------+------------------+--------+----------------+
+|| account_id| transaction_id | transaction_date | transaction_type | amount | running_balance|
++------------+----------------+------------------+------------------+--------+----------------+
+|| 101       | 1              | 2024-01-01      | DEPOSIT          | 1000   | 1000           |
+|| 101       | 2              | 2024-01-02      | WITHDRAWAL       | 200    | 800            |
+|| 101       | 3              | 2024-01-03      | TRANSFER_OUT     | 300    | 500            |
+|| 101       | 5              | 2024-01-04      | TRANSFER_IN      | 150    | 650            |
+|| 101       | 7              | 2024-01-05      | DEPOSIT          | 500    | 1150           |
+|| 102       | 4              | 2024-01-01      | DEPOSIT          | 500    | 500            |
+|| 102       | 6              | 2024-01-02      | WITHDRAWAL       | 100    | 400            |
++------------+----------------+------------------+------------------+--------+----------------+
+
+Explanation
+	•	Account 101: Starts with 1000 deposit, then 200 withdrawal (800), 300 transfer out (500), 150 transfer in (650), 500 deposit (1150)
+	•	Account 102: Starts with 500 deposit, then 100 withdrawal (400)
+
+-- SQL Setup
+CREATE TABLE medium_sql.transactions (
+    transaction_id INT,
+    account_id INT,
+    transaction_date DATE,
+    transaction_type VARCHAR(20),
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO medium_sql.transactions VALUES
+(1, 101, '2024-01-01', 'DEPOSIT', 1000),
+(2, 101, '2024-01-02', 'WITHDRAWAL', 200),
+(3, 101, '2024-01-03', 'TRANSFER_OUT', 300),
+(4, 102, '2024-01-01', 'DEPOSIT', 500),
+(5, 101, '2024-01-04', 'TRANSFER_IN', 150),
+(6, 102, '2024-01-02', 'WITHDRAWAL', 100),
+(7, 101, '2024-01-05', 'DEPOSIT', 500);
+
+===============================================================
+
+13.) Healthcare: Appointment Scheduling Conflicts Detection (Asked in Epic Systems)
+
+A hospital management system needs to identify scheduling conflicts where a doctor has overlapping appointments.
+
+Write a SQL query to find all conflicting appointments showing:
+	•	doctor_id
+	•	doctor_name
+	•	appointment1_id
+	•	appointment1_start
+	•	appointment1_end
+	•	appointment2_id
+	•	appointment2_start
+	•	appointment2_end
+
+Two appointments conflict if their time ranges overlap (even partially).
+
+Table: doctors
++----------+--------------+
+|| doctor_id| doctor_name  |
++----------+--------------+
+|| 101     | Dr. Smith    |
+|| 102     | Dr. Jones    |
++----------+--------------+
+
+Table: appointments
++---------------+----------+------------------+----------------+
+|| appointment_id| doctor_id| appointment_start| appointment_end|
++---------------+----------+------------------+----------------+
+|| 1            | 101      | 2024-01-15 09:00| 2024-01-15 10:00|
+|| 2            | 101      | 2024-01-15 09:30| 2024-01-15 10:30|
+|| 3            | 101      | 2024-01-15 11:00| 2024-01-15 12:00|
+|| 4            | 102      | 2024-01-15 14:00| 2024-01-15 15:00|
+|| 5            | 102      | 2024-01-15 14:30| 2024-01-15 15:30|
++---------------+----------+------------------+----------------+
+
+Expected Output
++----------+------------+---------------+------------------+----------------+---------------+------------------+----------------+
+|| doctor_id| doctor_name| appointment1_id| appointment1_start| appointment1_end| appointment2_id| appointment2_start| appointment2_end|
++----------+------------+---------------+------------------+----------------+---------------+------------------+----------------+
+|| 101     | Dr. Smith  | 1             | 2024-01-15 09:00| 2024-01-15 10:00| 2             | 2024-01-15 09:30| 2024-01-15 10:30|
+|| 102     | Dr. Jones  | 4             | 2024-01-15 14:00| 2024-01-15 15:00| 5             | 2024-01-15 14:30| 2024-01-15 15:30|
++----------+------------+---------------+------------------+----------------+---------------+------------------+----------------+
+
+Explanation
+	•	Dr. Smith: Appointment 1 (09:00-10:00) overlaps with Appointment 2 (09:30-10:30)
+	•	Dr. Jones: Appointment 4 (14:00-15:00) overlaps with Appointment 5 (14:30-15:30)
+	•	Appointment 3 doesnt conflict with any other
+
+-- SQL Setup
+CREATE TABLE medium_sql.doctors (
+    doctor_id INT,
+    doctor_name VARCHAR(100)
+);
+
+CREATE TABLE medium_sql.appointments (
+    appointment_id INT,
+    doctor_id INT,
+    appointment_start TIMESTAMP,
+    appointment_end TIMESTAMP
+);
+
+INSERT INTO medium_sql.doctors VALUES
+(101, 'Dr. Smith'),
+(102, 'Dr. Jones');
+
+INSERT INTO medium_sql.appointments VALUES
+(1, 101, '2024-01-15 09:00:00', '2024-01-15 10:00:00'),
+(2, 101, '2024-01-15 09:30:00', '2024-01-15 10:30:00'),
+(3, 101, '2024-01-15 11:00:00', '2024-01-15 12:00:00'),
+(4, 102, '2024-01-15 14:00:00', '2024-01-15 15:00:00'),
+(5, 102, '2024-01-15 14:30:00', '2024-01-15 15:30:00');
+
+===============================================================
+
+14.) Transportation: Delivery Performance Analysis by Time Windows (Asked in Uber)
+
+A logistics company wants to analyze delivery performance across different time windows (Morning: 6-12, Afternoon: 12-18, Evening: 18-24).
+
+Write a SQL query to find:
+	•	time_window
+	•	total_deliveries
+	•	on_time_deliveries (delivered within estimated time)
+	•	on_time_rate (percentage)
+	•	average_delivery_time_minutes
+
+Table: deliveries
++-------------+------------+------------------+------------------+------------------+
+|| delivery_id| driver_id  | pickup_time      | delivery_time    | estimated_time   |
++-------------+------------+------------------+------------------+------------------+
+|| 1          | 201        | 2024-01-15 08:00| 2024-01-15 09:30| 2024-01-15 10:00|
+|| 2          | 201        | 2024-01-15 14:00| 2024-01-15 15:45| 2024-01-15 16:00|
+|| 3          | 202        | 2024-01-15 19:00| 2024-01-15 20:15| 2024-01-15 21:00|
+|| 4          | 202        | 2024-01-15 10:00| 2024-01-15 11:30| 2024-01-15 11:00|
+|| 5          | 201        | 2024-01-15 16:00| 2024-01-15 17:20| 2024-01-15 17:00|
++-------------+------------+------------------+------------------+------------------+
+
+Expected Output
++-------------+------------------+-------------------+--------------+------------------------------+
+|| time_window| total_deliveries | on_time_deliveries| on_time_rate | average_delivery_time_minutes|
++-------------+------------------+-------------------+--------------+------------------------------+
+|| Morning    | 2                | 1                 | 50.00        | 90.00                        |
+|| Afternoon  | 2                | 1                 | 50.00        | 105.00                       |
+|| Evening    | 1                | 1                 | 100.00       | 75.00                        |
++-------------+------------------+-------------------+--------------+------------------------------+
+
+-- SQL Setup
+CREATE TABLE medium_sql.deliveries (
+    delivery_id INT,
+    driver_id INT,
+    pickup_time TIMESTAMP,
+    delivery_time TIMESTAMP,
+    estimated_time TIMESTAMP
+);
+
+INSERT INTO medium_sql.deliveries VALUES
+(1, 201, '2024-01-15 08:00:00', '2024-01-15 09:30:00', '2024-01-15 10:00:00'),
+(2, 201, '2024-01-15 14:00:00', '2024-01-15 15:45:00', '2024-01-15 16:00:00'),
+(3, 202, '2024-01-15 19:00:00', '2024-01-15 20:15:00', '2024-01-15 21:00:00'),
+(4, 202, '2024-01-15 10:00:00', '2024-01-15 11:30:00', '2024-01-15 11:00:00'),
+(5, 201, '2024-01-15 16:00:00', '2024-01-15 17:20:00', '2024-01-15 17:00:00');
+
+===============================================================
+
+15.) Education: Course Enrollment Pattern Analysis (Asked in Coursera)
+
+An online learning platform wants to analyze enrollment patterns. For courses with at least 10 enrollments, 
+find the percentage of students who enrolled within the first week of course launch.
+
+Write a SQL query to return:
+	•	course_id
+	•	course_name
+	•	total_enrollments
+	•	early_enrollments (within first 7 days)
+	•	early_enrollment_rate (percentage)
+
+Table: courses
++-----------+------------------+------------------+
+|| course_id| course_name      | launch_date      |
++-----------+------------------+------------------+
+|| 1        | Data Science 101 | 2024-01-01      |
+|| 2        | Web Development  | 2024-01-15      |
+|| 3        | Python Basics    | 2024-02-01      |
++-----------+------------------+------------------+
+
+Table: enrollments
++--------------+-----------+------------------+
+|| enrollment_id| course_id | enrollment_date  |
++--------------+-----------+------------------+
+|| 1           | 1         | 2024-01-02      |
+|| 2           | 1         | 2024-01-03      |
+|| 3           | 1         | 2024-01-05      |
+|| 4           | 1         | 2024-01-10      |
+|| 5           | 1         | 2024-01-15      |
+|| 6           | 2         | 2024-01-16      |
+|| 7           | 2         | 2024-01-17      |
+|| 8           | 2         | 2024-01-20      |
+|| 9           | 2         | 2024-01-25      |
+|| 10          | 2         | 2024-01-30      |
+|| 11          | 1         | 2024-01-08      |
+|| 12          | 1         | 2024-01-12      |
+|| 13          | 1         | 2024-01-18      |
+|| 14          | 1         | 2024-01-20      |
+|| 15          | 1         | 2024-01-25      |
+|| 16          | 1         | 2024-02-01      |
+|| 17          | 1         | 2024-02-05      |
+|| 18          | 1         | 2024-02-10      |
+|| 19          | 2         | 2024-01-18      |
+|| 20          | 2         | 2024-01-22      |
++--------------+-----------+------------------+
+
+Expected Output
++-----------+------------------+-------------------+-------------------+----------------------+
+|| course_id| course_name      | total_enrollments | early_enrollments | early_enrollment_rate|
++-----------+------------------+-------------------+-------------------+----------------------+
+|| 1        | Data Science 101 | 13                | 4                 | 30.77                |
++-----------+------------------+-------------------+-------------------+----------------------+
+
+-- SQL Setup
+CREATE TABLE medium_sql.courses (
+    course_id INT,
+    course_name VARCHAR(100),
+    launch_date DATE
+);
+
+CREATE TABLE medium_sql.enrollments (
+    enrollment_id INT,
+    course_id INT,
+    enrollment_date DATE
+);
+
+INSERT INTO medium_sql.courses VALUES
+(1, 'Data Science 101', '2024-01-01'),
+(2, 'Web Development', '2024-01-15'),
+(3, 'Python Basics', '2024-02-01');
+
+INSERT INTO medium_sql.enrollments VALUES
+(1, 1, '2024-01-02'),
+(2, 1, '2024-01-03'),
+(3, 1, '2024-01-05'),
+(4, 1, '2024-01-10'),
+(5, 1, '2024-01-15'),
+(6, 2, '2024-01-16'),
+(7, 2, '2024-01-17'),
+(8, 2, '2024-01-20'),
+(9, 2, '2024-01-25'),
+(10, 2, '2024-01-30'),
+(11, 1, '2024-01-08'),
+(12, 1, '2024-01-12'),
+(13, 1, '2024-01-18'),
+(14, 1, '2024-01-20'),
+(15, 1, '2024-01-25'),
+(16, 1, '2024-02-01'),
+(17, 1, '2024-02-05'),
+(18, 1, '2024-02-10'),
+(19, 2, '2024-01-18'),
+(20, 2, '2024-01-22');
+
+
+===============================================================
+
+16.) Food Delivery: Restaurant Performance During Peak Hours (Asked in DoorDash)
+
+A food delivery platform wants to analyze restaurant performance during peak hours (17:00-21:00) vs off-peak hours.
+
+Write a SQL query to find restaurants with peak and off-peak performance, showing:
+	•	restaurant_id
+	•	restaurant_name
+	•	peak_avg_rating
+	•	off_peak_avg_rating
+	•	peak_order_count
+	•	off_peak_order_count
+
+Table: restaurants
++-------------+----------------+
+|| restaurant_id| restaurant_name|
++-------------+----------------+
+|| 1          | Pizza Place    |
+|| 2          | Burger Joint   |
+|| 3          | Sushi House    |
++-------------+----------------+
+
+Table: orders
++----------+-------------+------------------+--------+
+|| order_id| restaurant_id| order_time       | rating |
++----------+-------------+------------------+--------+
+|| 1       | 1           | 2024-01-15 18:00| 4.5    |
+|| 2       | 1           | 2024-01-15 19:30| 4.0    |
+|| 3       | 1           | 2024-01-15 12:00| 3.5    |
+|| 4       | 2           | 2024-01-15 20:00| 4.8    |
+|| 5       | 2           | 2024-01-15 14:00| 4.2    |
+|| 6       | 2           | 2024-01-15 16:00| 4.0    |
+|| 7       | 3           | 2024-01-15 18:30| 3.8    |
+|| 8       | 3           | 2024-01-15 19:00| 3.9    |
+|| 9       | 3           | 2024-01-15 13:00| 4.5    |
+|| 10      | 3           | 2024-01-15 15:00| 4.3    |
++----------+-------------+------------------+--------+
+
+Expected Output
++-------------+----------------+------------------+---------------------+------------------+---------------------+
+|| restaurant_id| restaurant_name| peak_avg_rating  | off_peak_avg_rating | peak_order_count | off_peak_order_count|
++-------------+----------------+------------------+---------------------+------------------+---------------------+
+|| 1          | Pizza Place    | 4.25             | 3.50                | 2                | 1                   |
+|| 2          | Burger Joint   | 4.80             | 4.10                | 1                | 2                   |
+|| 3	      | Sushi House	   | 3.85	          | 4.40	            | 2	               | 2                   |
++-------------+----------------+------------------+---------------------+------------------+---------------------+
+
+
+-- SQL Setup
+CREATE TABLE medium_sql.restaurants (
+    restaurant_id INT,
+    restaurant_name VARCHAR(100)
+);
+
+CREATE TABLE medium_sql.food_orders (
+    order_id INT,
+    restaurant_id INT,
+    order_time TIMESTAMP,
+    rating DECIMAL(3,2)
+);
+
+INSERT INTO medium_sql.restaurants VALUES
+(1, 'Pizza Place'),
+(2, 'Burger Joint'),
+(3, 'Sushi House');
+
+INSERT INTO medium_sql.food_orders VALUES
+(1, 1, '2024-01-15 18:00:00', 4.5),
+(2, 1, '2024-01-15 19:30:00', 4.0),
+(3, 1, '2024-01-15 12:00:00', 3.5),
+(4, 2, '2024-01-15 20:00:00', 4.8),
+(5, 2, '2024-01-15 14:00:00', 4.2),
+(6, 2, '2024-01-15 16:00:00', 4.0),
+(7, 3, '2024-01-15 18:30:00', 3.8),
+(8, 3, '2024-01-15 19:00:00', 3.9),
+(9, 3, '2024-01-15 13:00:00', 4.5),
+(10, 3, '2024-01-15 15:00:00', 4.3);
+
+
+===============================================================
+
+17.) Employee Compensation: Cumulative Earnings Over Time (Asked in Microsoft)
+
+A company tracks employee salary changes over time. Calculate the cumulative salary for each employee up to each month, but exclude the most recent month for each employee.
+
+Write a SQL query to return:
+	•	employee_id
+	•	month_year
+	•	monthly_salary
+	•	cumulative_salary
+
+Table: salary_history
++----------+------------+-------------+---------------+
+|| record_id| employee_id| salary_date | monthly_salary|
++----------+------------+-------------+---------------+
+|| 1       | 101        | 2024-01-31 | 5000          |
+|| 2       | 101        | 2024-02-29 | 5500          |
+|| 3       | 101        | 2024-03-31 | 5500          |
+|| 4       | 102        | 2024-01-31 | 6000          |
+|| 5       | 102        | 2024-02-29 | 6500          |
+|| 6       | 102        | 2024-03-31 | 7000          |
+|| 7       | 103        | 2024-01-31 | 4500          |
++----------+------------+-------------+---------------+
+
+Expected Output
++------------+-------------+---------------+------------------+
+|| employee_id| month_year  | monthly_salary| cumulative_salary|
++------------+-------------+---------------+------------------+
+|| 101       | 2024-01     | 5000          | 5000             |
+|| 101       | 2024-02     | 5500          | 10500            |
+|| 102       | 2024-01     | 6000          | 6000             |
+|| 102       | 2024-02     | 6500          | 12500            |
++------------+-------------+---------------+------------------+
+
+Explanation
+Employee 101: Most recent month is Mar 2024, excluded. Cumulative: Jan=5000, Feb=10500
+Employee 102: Most recent month is Mar 2024, excluded. Cumulative: Jan=6000, Feb=12500
+Employee 103: Only one month (Jan), which is the most recent, so excluded entirely.
+
+-- SQL Setup
+CREATE TABLE medium_sql.salary_history (
+    record_id INT,
+    employee_id INT,
+    salary_date DATE,
+    monthly_salary DECIMAL(10,2)
+);
+
+INSERT INTO medium_sql.salary_history VALUES
+(1, 101, '2024-01-31', 5000),
+(2, 101, '2024-02-29', 5500),
+(3, 101, '2024-03-31', 5500),
+(4, 102, '2024-01-31', 6000),
+(5, 102, '2024-02-29', 6500),
+(6, 102, '2024-03-31', 7000),
+(7, 103, '2024-01-31', 4500);
+
+===============================================================
+
+18.) Customer Transaction Analysis: Valid Transactions After Invalid Ones (Asked in PayPal)
+
+A payment processing system flags transactions as valid or invalid. Find customers who had at least one invalid transaction followed by at least one valid transaction within 30 days.
+
+Write a SQL query to return:
+	•	customer_id
+	•	customer_name
+	•	invalid_transaction_date
+	•	valid_transaction_date
+	•	days_between
+
+Table: txn_customers
++-------------+---------------+
+|| customer_id| customer_name |
++-------------+---------------+
+|| 101        | Alice         |
+|| 102        | Bob           |
+|| 103        | Charlie       |
++-------------+---------------+
+
+Table: txn_transactions
++----------------+-------------+------------------+-------------+
+|| transaction_id| customer_id | transaction_date | is_valid    |
++----------------+-------------+------------------+-------------+
+|| 1             | 101         | 2024-01-10      | false       |
+|| 2             | 101         | 2024-01-25      | true        |
+|| 3             | 102         | 2024-01-15      | false       |
+|| 4             | 102         | 2024-02-20      | true        |
+|| 5             | 103         | 2024-01-20      | false       |
+|| 6             | 101         | 2024-02-05      | true        |
+|| 7             | 103         | 2024-01-22      | true        |
++----------------+-------------+------------------+-------------+
+
+Expected Output
++-------------+---------------+------------------------+----------------------+---------------+
+|| customer_id| customer_name | invalid_transaction_date| valid_transaction_date| days_between |
++-------------+---------------+------------------------+----------------------+---------------+
+|| 101        | Alice         | 2024-01-10            | 2024-01-25          | 15           |
+|| 103        | Charlie       | 2024-01-20            | 2024-01-22          | 2            |
++-------------+---------------+------------------------+----------------------+---------------+
+
+Explanation
+Alice: Invalid on Jan 10, valid on Jan 25 (15 days) - within 30 days
+Bob: Invalid on Jan 15, valid on Feb 20 (36 days) - exceeds 30 days, excluded
+Charlie: Invalid on Jan 20, valid on Jan 22 (2 days) - within 30 days
+
+-- SQL Setup
+CREATE TABLE medium_sql.txn_customers (
+    customer_id INT,
+    customer_name VARCHAR(100)
+);
+
+CREATE TABLE medium_sql.txn_transactions (
+    transaction_id INT,
+    customer_id INT,
+    transaction_date DATE,
+    is_valid BOOLEAN
+);
+
+INSERT INTO medium_sql.txn_customers VALUES
+(101, 'Alice'),
+(102, 'Bob'),
+(103, 'Charlie');
+
+INSERT INTO medium_sql.txn_transactions VALUES
+(1, 101, '2024-01-10', false),
+(2, 101, '2024-01-25', true),
+(3, 102, '2024-01-15', false),
+(4, 102, '2024-02-20', true),
+(5, 103, '2024-01-20', false),
+(6, 101, '2024-02-05', true),
+(7, 103, '2024-01-22', true);

@@ -1,0 +1,278 @@
+1.) Employee Sales Variation (Asked in Amazon)
+
+Your company is evaluating how consistently its sales teams perform month over month.
+
+Given a table that records the number of sales made by each employee in each month, write a SQL query that outputs the name of each employee 
+and the difference between their highest and lowest monthly sales figures.
+
+Sort the results by the largest difference first.
+
+Table: employee_sales
+
++------------------+----------+
+| employee_name    | STRING   |
+| sales_amount     | INTEGER  |
+| sales_month      | INTEGER  |
+| sales_year       | INTEGER  |
++------------------+----------+
+
+Example Input:
+
++------------------+--------------+-------------+------------+
+| employee_name    | sales_amount | sales_month | sales_year |
++------------------+--------------+-------------+------------+
+| Alice Johnson    | 5000         | 1           | 2023       |
+| Alice Johnson    | 7000         | 2           | 2023       |
+| Alice Johnson    | 6200         | 3           | 2023       |
+| Bob Smith        | 12000        | 1           | 2023       |
+| Bob Smith        | 11000        | 2           | 2023       |
+| Bob Smith        | 13000        | 3           | 2023       |
++------------------+--------------+-------------+------------+
+
+Example Output:
+
++------------------+------------------+
+| employee_name    | sales_variation  |
++------------------+------------------+
+| Bob Smith        | 2000             |
+| Alice Johnson    | 2000             |
++------------------+------------------+
+
+Explanation:
+
+Bob Smith
+	•	Highest monthly sales: 13000
+	•	Lowest monthly sales: 11000
+	•	Difference: 2000
+
+Alice Johnson
+	•	Highest monthly sales: 7000
+	•	Lowest monthly sales: 5000
+	•	Difference: 2000
+
+
+CREATE TABLE easy_sql.employee_sales (
+    employee_name TEXT,
+    sales_amount  INT,
+    sales_month   INT,
+    sales_year    INT
+);
+
+INSERT INTO easy_sql.employee_sales (employee_name, sales_amount, sales_month, sales_year) VALUES
+('Alice Johnson', 5000, 1, 2023),
+('Alice Johnson', 7000, 2, 2023),
+('Alice Johnson', 6200, 3, 2023),
+('Bob Smith', 12000, 1, 2023),
+('Bob Smith', 11000, 2, 2023),
+('Bob Smith', 13000, 3, 2023);
+
+
+===============================================================
+
+2.) Top Active Customers (Asked in Walmart)
+
+Your retail analytics team wants to find your top active customers who made the most purchases in a specific month.
+
+Given a table of purchase activity, write a SQL query to identify the top 2 customers who made the highest number of purchases in January 2025.
+Output the customer ID and the total number of purchases they made in that month.
+Sort the results in descending order based on the purchase count.
+
+Table: purchases
+
++----------------+----------+
+| purchase_id    | INTEGER  |
+| customer_id    | INTEGER  |
+| product_id     | INTEGER  |
+| purchase_date  | DATE     |
++----------------+----------+
+
+Example Input
+
++-------------+-------------+------------+----------------+
+| purchase_id | customer_id | product_id | purchase_date  |
++-------------+-------------+------------+----------------+
+| 101         | 501         | 3001       | 2025-01-02     |
+| 102         | 502         | 3002       | 2025-01-03     |
+| 103         | 501         | 3003       | 2025-01-10     |
+| 104         | 503         | 3004       | 2025-01-15     |
+| 105         | 501         | 3001       | 2025-01-20     |
+| 106         | 502         | 3002       | 2025-01-22     |
+| 107         | 504         | 3005       | 2025-02-01     |
+| 108         | 502         | 3006       | 2025-01-25     |
++-------------+-------------+------------+----------------+
+Example Output
+
++-------------+------------------+
+| customer_id | purchase_count   |
++-------------+------------------+
+| 501         | 3                |
+| 502         | 3                |
++-------------+------------------+
+
+
+Explanation
+	•	Customer 501 made 3 purchases in January 2025 (IDs 101, 103, 105).
+	•	Customer 502 also made 3 purchases in January 2025 (IDs 102, 106, 108).
+
+Since we are asked for the top 2 customers by purchase count and there are no ties beyond those counts, both are included.
+
+
+CREATE TABLE easy_sql.purchases (
+    purchase_id   INT,
+    customer_id   INT,
+    product_id    INT,
+    purchase_date DATE
+);
+
+INSERT INTO easy_sql.purchases (purchase_id, customer_id, product_id, purchase_date) VALUES
+(101, 501, 3001, '2025-01-02'),
+(102, 502, 3002, '2025-01-03'),
+(103, 501, 3003, '2025-01-10'),
+(104, 503, 3004, '2025-01-15'),
+(105, 501, 3001, '2025-01-20'),
+(106, 502, 3002, '2025-01-22'),
+(107, 504, 3005, '2025-02-01'),
+(108, 502, 3006, '2025-01-25');
+
+===============================================================
+
+3.) Final Loyalty Points Balance (Asked in Amazon)
+
+An e-commerce company runs a loyalty program where customers earn and redeem points.
+
+Given a table of loyalty point transactions, write a SQL query to calculate each customer’s final points balance.
+
+Rules:
+	•	EARN transactions add points.
+	•	REDEEM transactions subtract points.
+
+Output the customer ID and final points balance.
+
+Table: loyalty_points
+
++------------------+----------+
+| customer_id      | INTEGER  |
+| txn_type         | STRING   |
+| points           | INTEGER  |
++------------------+----------+
+
+•	txn_type is either 'EARN' or 'REDEEM'
+
+
+Example Input:
+
++-------------+----------+--------+
+| customer_id | txn_type | points |
++-------------+----------+--------+
+| 101         | EARN     | 500    |
+| 101         | REDEEM   | 200    |
+| 101         | EARN     | 300    |
+| 102         | EARN     | 1000   |
+| 102         | REDEEM   | 400    |
+| 103         | REDEEM   | 100    |
+| 103         | EARN     | 250    |
++-------------+----------+--------+
+
+Example Output:
+
++-------------+---------------+
+| customer_id | final_balance |
++-------------+---------------+
+| 101         | 600           |
+| 102         | 600           |
+| 103         | 150           |
++-------------+---------------+
+
+Explanation:
+	•	Customer 101: 500 - 200 + 300 = 600
+	•	Customer 102: 1000 - 400 = 600
+	•	Customer 103: -100 + 250 = 150
+
+
+
+CREATE TABLE easy_sql.loyalty_points (
+    customer_id INT,
+    txn_type    TEXT,
+    points      INT
+);
+
+INSERT INTO easy_sql.loyalty_points (customer_id, txn_type, points) VALUES
+(101, 'EARN',   500),
+(101, 'REDEEM', 200),
+(101, 'EARN',   300),
+(102, 'EARN',  1000),
+(102, 'REDEEM', 400),
+(103, 'REDEEM', 100),
+(103, 'EARN',   250);
+
+===============================================================
+
+4.) Store Staff Strength Analysis (Asked in HSBC)
+
+A retail company operates multiple stores and wants to understand how many staff members are working in each store.
+
+Given a table that records employees and the store they are assigned to, write a SQL query to determine the total number of employees working in each store, and display that count for every employee.
+
+Each employee should be returned along with the size of the store they belong to.
+
+The result can be returned in any order.
+
+Table: store_employees
+
++------------------+----------+
+| employee_id      | INTEGER  |
+| store_id         | INTEGER  |
++------------------+----------+
+
+•	employee_id is the primary key
+•	Each employee is assigned to exactly one store
+
+
+Example Input:
+
++-------------+----------+
+| employee_id | store_id |
++-------------+----------+
+| 101         | 20       |
+| 102         | 20       |
+| 103         | 20       |
+| 104         | 15       |
+| 105         | 30       |
+| 106         | 30       |
++-------------+----------+
+
+Example Output:
+
++-------------+-------------+
+| employee_id | store_size  |
++-------------+-------------+
+| 101         | 3           |
+| 102         | 3           |
+| 103         | 3           |
+| 104         | 1           |
+| 105         | 2           |
+| 106         | 2           |
++-------------+-------------+
+
+Explanation:
+	•	Employees 101, 102, 103 work in store 20, which has 3 staff members
+	•	Employee 104 works in store 15, which has 1 staff member
+	•	Employees 105, 106 work in store 30, which has 2 staff members
+
+Each employee’s row displays the total staff count of their assigned store.
+
+
+CREATE TABLE easy_sql.store_employees (
+    employee_id INT PRIMARY KEY,
+    store_id    INT
+);
+
+INSERT INTO easy_sql.store_employees (employee_id, store_id) VALUES
+(101, 20),
+(102, 20),
+(103, 20),
+(104, 15),
+(105, 30),
+(106, 30);
+
+

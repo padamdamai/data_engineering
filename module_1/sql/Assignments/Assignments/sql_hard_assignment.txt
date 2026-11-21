@@ -1,0 +1,870 @@
+1.) Tree Node Classification (Asked in Uber)
+
+A company stores hierarchical data in a table where each row represents a node and its parent node.
+
+Using this table, classify each node into one of the following categories:
+	•	ROOT → Node with no parent
+	•	LEAF → Node that does not have any child
+	•	INNER → Node that has both a parent and at least one child
+
+Write a SQL query to return each node along with its corresponding node type.
+
+Table: tree
+
++------------------+----------+
+| node             | INTEGER  |
+| parent           | INTEGER  |
++------------------+----------+
+
+•	node represents the current node
+•	parent represents the parent of the node
+•	The root node has parent = NULL
+
+Example Input
+
++------+--------+
+| node | parent |
++------+--------+
+| 5    | 8      |
+| 9    | 8      |
+| 4    | 5      |
+| 2    | 9      |
+| 1    | 5      |
+| 3    | 9      |
+| 8    | NULL   |
++------+--------+
+
+Expected Output
+
++------+-----------+
+| node | node_type |
++------+-----------+
+| 5    | INNER     |
+| 9    | INNER     |
+| 4    | LEAF      |
+| 2    | LEAF      |
+| 1    | LEAF      |
+| 3    | LEAF      |
+| 8    | ROOT      |
++------+-----------+
+Explanation
+	•	Node 8 has no parent → ROOT
+	•	Nodes 5 and 9 have a parent and also act as parents for other nodes → INNER
+	•	Nodes 1, 2, 3, 4 never appear as a parent → LEAF
+
+
+CREATE TABLE medium_sql.tree (
+    node   INT,
+    parent INT
+);
+
+INSERT INTO medium_sql.tree (node, parent) VALUES
+(5, 8),
+(9, 8),
+(4, 5),
+(2, 9),
+(1, 5),
+(3, 9),
+(8, NULL);
+
+===============================================================
+
+2.) Paytm Repeated Payments Detection (Asked in Paytm)
+
+Sometimes in Paytm, a payment gets re-triggered due to network retries, app refresh, or gateway timeouts — causing a user to accidentally pay the same biller again with the same UPI handle for the same amount within a short window.
+
+Using the paytm_transactions table, identify repeated payments and return the count of repeated payments.
+
+Rules
+	•	A payment is “repeated” if the same biller_id + same upi_id + same amount occurs within 10 minutes of the previous identical payment.  ￼
+	•	Do not count the first transaction in a repeated group (only the “extra” ones are counted).  ￼
+
+Table: paytm_transactions
+
++-------------------------+----------+
+| transaction_id          | INTEGER  |
+| biller_id               | INTEGER  |
+| upi_id                  | INTEGER  |
+| amount                  | INTEGER  |
+| transaction_timestamp   | TIMESTAMP|
++-------------------------+----------+
+
+ Example Input
+
++----------------+----------+--------+--------+------------------------+
+| transaction_id | biller_id | upi_id | amount | transaction_timestamp |
++----------------+----------+--------+--------+------------------------+
+| 1              | 901       | 11     | 499    | 2025-01-10 10:00:00    |
+| 2              | 901       | 11     | 499    | 2025-01-10 10:07:00    |
+| 3              | 901       | 11     | 499    | 2025-01-10 10:25:00    |
+| 4              | 902       | 22     | 1200   | 2025-01-10 11:00:00    |
+| 5              | 902       | 22     | 1200   | 2025-01-10 11:09:30    |
+| 6              | 902       | 22     | 1300   | 2025-01-10 11:05:00    |
+| 7              | 903       | 33     | 799    | 2025-01-10 12:00:00    |
++----------------+----------+--------+--------+------------------------+
+
+Expected Output
+
++------------------------+
+| repeated_payment_count |
++------------------------+
+| 2                      |
++------------------------+
+
+Explanation
+	•	(Txn 1 → Txn 2): Same biller 901, same upi 11, same amount 499, within 7 minutes → Txn 2 is a repeated payment
+	•	(Txn 2 → Txn 3): Same combo but 18 minutes later → not repeated 
+	•	(Txn 4 → Txn 5): Same biller 902, same upi 22, same amount 1200, within 9m 30s → Txn 5 is repeated 
+	•	Txn 6 differs in amount (1300) → not repeated
+So total repeated payments = 2
+
+SQL Setup
+
+CREATE TABLE hard_sql.paytm_transactions (
+    transaction_id         INT PRIMARY KEY,
+    biller_id              INT,
+    upi_id                 INT,
+    amount                 INT,
+    transaction_timestamp  TIMESTAMP
+);
+
+INSERT INTO hard_sql.paytm_transactions (transaction_id, biller_id, upi_id, amount, transaction_timestamp) VALUES
+(1, 901, 11,  499,  '2025-01-10 10:00:00'),
+(2, 901, 11,  499,  '2025-01-10 10:07:00'),
+(3, 901, 11,  499,  '2025-01-10 10:25:00'),
+(4, 902, 22, 1200,  '2025-01-10 11:00:00'),
+(5, 902, 22, 1200,  '2025-01-10 11:09:30'),
+(6, 902, 22, 1300,  '2025-01-10 11:05:00'),
+(7, 903, 33,  799,  '2025-01-10 12:00:00');
+
+
+===============================================================
+
+3.) Daily Trip Cancellation Rate for Valid Users (Asked in Expedia)
+
+A travel-tech platform manages trip bookings between travelers and drivers across multiple cities.
+
+Each trip request can either be completed or cancelled by the traveler or the driver.
+
+Write a SQL query to compute the daily trip cancellation rate for trips requested between Nov 1, 2024 and Nov 3, 2024, considering only trips where both the traveler and the driver are not banned.
+
+Rules
+	•	A trip is considered cancelled if:
+	•	status = 'cancelled_by_traveler'
+	•	status = 'cancelled_by_driver'
+	•	Cancellation rate formula:
+
+cancelled_trips / total_trips
+
+	•	Round the cancellation rate to 2 decimal places
+	•	Return results grouped by day
+
+Table: trips
+
+Each row represents a trip request.
+
++----+-------------+-------------+---------+------------------------+------------+
+| id | traveler_id | driver_id   | city_id | status                 | request_at|
++----+-------------+-------------+---------+------------------------+------------+
+
+	•	status is an ENUM:
+	•	'completed'
+	•	'cancelled_by_traveler'
+	•	'cancelled_by_driver'
+
+Table: users
+
++----------+--------+------------+
+| user_id  | banned | role       |
++----------+--------+------------+
+
+	•	role can be:
+	•	'traveler'
+	•	'driver'
+	•	'partner'
+	•	Only users with banned = 'No' are considered valid
+
+Example Input
+
+trips
+
++----+-------------+-------------+---------+------------------------+------------+
+| id | traveler_id | driver_id   | city_id | status                 | request_at|
++----+-------------+-------------+---------+------------------------+------------+
+| 1  | 1           | 10          | 1       | completed              | 2024-11-01 |
+| 2  | 2           | 11          | 1       | cancelled_by_driver    | 2024-11-01 |
+| 3  | 3           | 12          | 6       | completed              | 2024-11-01 |
+| 4  | 4           | 13          | 6       | cancelled_by_traveler  | 2024-11-01 |
+| 5  | 1           | 10          | 1       | completed              | 2024-11-02 |
+| 6  | 2           | 11          | 6       | completed              | 2024-11-02 |
+| 7  | 3           | 12          | 6       | completed              | 2024-11-02 |
+| 8  | 2           | 12          | 12      | completed              | 2024-11-03 |
+| 9  | 3           | 10          | 12      | completed              | 2024-11-03 |
+| 10 | 4           | 13          | 12      | cancelled_by_driver    | 2024-11-03 |
++----+-------------+-------------+---------+------------------------+------------+
+
+users
+
++---------+--------+------------+
+| user_id | banned | role       |
++---------+--------+------------+
+| 1       | No     | traveler   |
+| 2       | Yes    | traveler   |
+| 3       | No     | traveler   |
+| 4       | No     | traveler   |
+| 10      | No     | driver     |
+| 11      | No     | driver     |
+| 12      | No     | driver     |
+| 13      | No     | driver     |
++---------+--------+------------+
+
+
+Expected Output
+
++------------+-------------------+
+| day        | cancellation_rate |
++------------+-------------------+
+| 2024-11-01 | 0.33              |
+| 2024-11-02 | 0.00              |
+| 2024-11-03 | 0.50              |
++------------+-------------------+
+
+
+Explanation
+
+2024-11-01
+	•	Valid trips = 3
+	•	Cancelled trips = 1
+	•	Cancellation rate = 1 / 3 = 0.33
+
+2024-11-02
+	•	All valid trips completed
+	•	Cancellation rate = 0.00
+
+2024-11-03
+	•	Valid trips = 2
+	•	Cancelled trips = 1
+	•	Cancellation rate = 0.50
+
+SQL Setup
+
+CREATE TABLE hard_sql.trips (
+    id INT,
+    traveler_id INT,
+    driver_id INT,
+    city_id INT,
+    status TEXT,
+    request_at DATE
+);
+
+CREATE TABLE hard_sql.users (
+    user_id INT,
+    banned TEXT,
+    role TEXT
+);
+
+INSERT INTO hard_sql.users VALUES
+(1,'No','traveler'),
+(2,'Yes','traveler'),
+(3,'No','traveler'),
+(4,'No','traveler'),
+(10,'No','driver'),
+(11,'No','driver'),
+(12,'No','driver'),
+(13,'No','driver');
+
+INSERT INTO hard_sql.trips VALUES
+(1,1,10,1,'completed','2024-11-01'),
+(2,2,11,1,'cancelled_by_driver','2024-11-01'),
+(3,3,12,6,'completed','2024-11-01'),
+(4,4,13,6,'cancelled_by_traveler','2024-11-01'),
+(5,1,10,1,'completed','2024-11-02'),
+(6,2,11,6,'completed','2024-11-02'),
+(7,3,12,6,'completed','2024-11-02'),
+(8,2,12,12,'completed','2024-11-03'),
+(9,3,10,12,'completed','2024-11-03'),
+(10,4,13,12,'cancelled_by_driver','2024-11-03');
+
+===============================================================
+
+4.) Second Sold Item Matches Favorite Brand (Asked in salesforce)
+
+An online marketplace allows users to buy and sell items.
+Each user has a favorite brand, and each item belongs to a specific brand.
+
+For every user, determine whether the brand of the second item they sold (by order date) matches their favorite brand.
+
+Important Rules
+	•	Consider only items where the user acted as a seller
+	•	If a user sold fewer than two items, return "no"
+	•	A seller never sells more than one item per day
+
+
+Table: users
+
++----------------+----------+
+| user_id        | INTEGER  |
+| join_date      | DATE     |
+| favorite_brand | VARCHAR  |
++----------------+----------+
+
+
+Table: orders
+
++---------------+----------+
+| order_id      | INTEGER  |
+| order_date    | DATE     |
+| item_id       | INTEGER  |
+| buyer_id      | INTEGER  |
+| seller_id     | INTEGER  |
++---------------+----------+
+
+Table: items
+
++---------------+----------+
+| item_id       | INTEGER  |
+| item_brand    | VARCHAR  |
++---------------+----------+
+
+Example Input
+
+users
+
++---------+------------+----------------+
+| user_id | join_date  | favorite_brand |
++---------+------------+----------------+
+| 1       | 2019-01-01 | Lenovo         |
+| 2       | 2019-02-09 | Samsung        |
+| 3       | 2019-01-19 | LG             |
+| 4       | 2019-05-21 | HP             |
++---------+------------+----------------+
+
+orders
+
++----------+------------+---------+----------+-----------+
+| order_id | order_date | item_id | buyer_id | seller_id |
++----------+------------+---------+----------+-----------+
+| 1        | 2019-08-01 | 4       | 1        | 2         |
+| 2        | 2019-08-02 | 2       | 1        | 3         |
+| 3        | 2019-08-03 | 3       | 2        | 3         |
+| 4        | 2019-08-04 | 1       | 4        | 2         |
+| 5        | 2019-08-04 | 1       | 3        | 4         |
+| 6        | 2019-08-05 | 2       | 2        | 4         |
++----------+------------+---------+----------+-----------+
+
+items
+
++---------+------------+
+| item_id | item_brand |
++---------+------------+
+| 1       | Samsung    |
+| 2       | Lenovo     |
+| 3       | LG         |
+| 4       | HP         |
++---------+------------+
+
+Expected Output
+
++-----------+--------------------+
+| seller_id | second_item_fav_brand |
++-----------+--------------------+
+| 1         | no                 |
+| 2         | yes                |
+| 3         | yes                |
+| 4         | no                 |
++-----------+--------------------+
+
+
+Explanation
+	•	User 1 sold no items → "no"
+	•	User 2 sold items on:
+	•	2019-08-01 → HP
+	•	2019-08-04 → Samsung → matches favorite brand 
+	•	User 3 sold items on:
+	•	2019-08-02 → Lenovo
+	•	2019-08-03 → LG → matches favorite brand 
+	•	User 4 sold items on:
+	•	2019-08-04 → Samsung
+	•	2019-08-05 → Lenovo → does NOT match favorite brand 
+
+CREATE TABLE hard_sql.users (
+    user_id INT PRIMARY KEY,
+    join_date DATE,
+    favorite_brand VARCHAR(50)
+);
+
+CREATE TABLE hard_sql.items (
+    item_id INT PRIMARY KEY,
+    item_brand VARCHAR(50)
+);
+
+CREATE TABLE hard_sql.orders (
+    order_id INT PRIMARY KEY,
+    order_date DATE,
+    item_id INT,
+    buyer_id INT,
+    seller_id INT
+);
+
+INSERT INTO hard_sql.users VALUES
+(1,'2019-01-01','Lenovo'),
+(2,'2019-02-09','Samsung'),
+(3,'2019-01-19','LG'),
+(4,'2019-05-21','HP');
+
+INSERT INTO hard_sql.items VALUES
+(1,'Samsung'),
+(2,'Lenovo'),
+(3,'LG'),
+(4,'HP');
+
+INSERT INTO hard_sql.orders VALUES
+(1,'2019-08-01',4,1,2),
+(2,'2019-08-02',2,1,3),
+(3,'2019-08-03',3,2,3),
+(4,'2019-08-04',1,4,2),
+(5,'2019-08-04',1,3,4),
+(6,'2019-08-05',2,2,4);
+
+===============================================================
+
+5.) Month-over-Month Growth in Long Data Sessions (Asked in Airtel)
+
+A telecom company tracks mobile data sessions initiated by users on its network.
+
+Each session has a duration measured in seconds.
+A long data session is defined as any session that lasts more than 300 seconds.
+
+Write a SQL query to calculate the month-over-month percentage growth in the number of long data sessions.
+
+The output should show, for each month (except the first), how the count of long sessions has grown compared to the previous month.
+
+Table: data_sessions
+
++-------------------+----------+
+| Column Name       | Type     |
++-------------------+----------+
+| session_id        | INTEGER  |
+| user_id           | INTEGER  |
+| session_start     | DATE     |
+| duration_seconds  | INTEGER  |
++-------------------+----------+
+
+
+Example Input
+
++------------+---------+---------------+------------------+
+| session_id | user_id | session_start | duration_seconds|
++------------+---------+---------------+------------------+
+| 1          | 101     | 2025-01-05    | 420              |
+| 2          | 102     | 2025-01-08    | 180              |
+| 3          | 103     | 2025-01-15    | 600              |
+| 4          | 104     | 2025-01-20    | 320              |
+| 5          | 105     | 2025-02-02    | 500              |
+| 6          | 106     | 2025-02-05    | 700              |
+| 7          | 107     | 2025-02-10    | 150              |
+| 8          | 108     | 2025-02-18    | 900              |
+| 9          | 109     | 2025-02-25    | 360              |
+| 10         | 110     | 2025-03-03    | 800              |
+| 11         | 111     | 2025-03-10    | 200              |
++------------+---------+---------------+------------------+
+
+Expected Output
+
++------------+----------------+
+| month      | growth_percent |
++------------+----------------+
+| 2025-02-01 | 33.33          |
+| 2025-03-01 | -75.00          |
++------------+----------------+
+
+Explanation
+
+Monthly long-session counts
+	•	Jan 2025 → 3 sessions
+	•	Feb 2025 → 4 sessions
+	•	Mar 2025 → 1 sessions
+
+Growth calculations
+	•	Feb vs Jan → (4 − 3) / 3 × 100 = 33.33%
+	•	Mar vs Feb → (1 − 4) / 4 × 100 = -75.00%
+
+SQL Setup 
+
+CREATE TABLE hard_sql.data_sessions (
+    session_id INT,
+    user_id INT,
+    session_start DATE,
+    duration_seconds INT
+);
+
+INSERT INTO hard_sql.data_sessions VALUES
+(1,101,'2025-01-05',420),
+(2,102,'2025-01-08',180),
+(3,103,'2025-01-15',600),
+(4,104,'2025-01-20',320),
+(5,105,'2025-02-02',500),
+(6,106,'2025-02-05',700),
+(7,107,'2025-02-10',150),
+(8,108,'2025-02-18',900),
+(9,109,'2025-02-25',360),
+(10,110,'2025-03-03',800),
+(11,111,'2025-03-10',200);
+
+==============================================================
+
+6.) Finance: Stock Price Recovery After Decline Streak (Asked in Goldman Sachs)
+
+A financial analytics firm wants to identify days when a stock price increased after experiencing exactly 3 consecutive days of price decline.
+
+Write a SQL query to find all such days for each stock, showing:
+	•	stock_symbol
+	•	recovery_date (the day price increased after 3 declines)
+	•	price_on_recovery_date
+	•	previous_3_days_avg_price (average price of the 3 declining days)
+
+Table: stock_prices
++------------+----------+------------+--------+
+| price_id   | symbol   | price_date | price  |
++------------+----------+------------+--------+
+| 1          | AAPL     | 2024-01-01 | 150.00 |
+| 2          | AAPL     | 2024-01-02 | 148.00 |
+| 3          | AAPL     | 2024-01-03 | 146.00 |
+| 4          | AAPL     | 2024-01-04 | 144.00 |
+| 5          | AAPL     | 2024-01-05 | 147.00 |
+| 6          | AAPL     | 2024-01-06 | 145.00 |
+| 7          | AAPL     | 2024-01-07 | 143.00 |
+| 8          | AAPL     | 2024-01-08 | 141.00 |
+| 9          | AAPL     | 2024-01-09 | 144.00 |
+| 10         | GOOGL    | 2024-01-01 | 2800.00|
+| 11         | GOOGL    | 2024-01-02 | 2780.00|
+| 12         | GOOGL    | 2024-01-03 | 2760.00|
+| 13         | GOOGL    | 2024-01-04 | 2740.00|
+| 14         | GOOGL    | 2024-01-05 | 2765.00|
++------------+----------+------------+--------+
+
+Expected Output
++--------+----------------+------------------+------------------------+
+| symbol | recovery_date  | price_on_recovery| previous_3_days_avg_price|
++--------+----------------+------------------+------------------------+
+| AAPL   | 2024-01-05     | 147.00           | 146.00                 |
+| AAPL   | 2024-01-09     | 144.00           | 142.33                 |
+| GOOGL  | 2024-01-05     | 2765.00          | 2760.00                |
++--------+----------------+------------------+------------------------+
+
+Explanation
+	•	AAPL on 2024-01-05: Price increased to 147 after 3 declines (148→146→144)
+	•	AAPL on 2024-01-09: Price increased to 144 after 3 declines (145→143→141)
+	•	GOOGL on 2024-01-05: Price increased to 2765 after 3 declines (2780→2760→2740)
+
+-- SQL Setup
+CREATE TABLE hard_sql.stock_prices (
+    price_id INT,
+    symbol VARCHAR(10),
+    price_date DATE,
+    price DECIMAL(10,2)
+);
+
+INSERT INTO hard_sql.stock_prices VALUES
+(1, 'AAPL', '2024-01-01', 150.00),
+(2, 'AAPL', '2024-01-02', 148.00),
+(3, 'AAPL', '2024-01-03', 146.00),
+(4, 'AAPL', '2024-01-04', 144.00),
+(5, 'AAPL', '2024-01-05', 147.00),
+(6, 'AAPL', '2024-01-06', 145.00),
+(7, 'AAPL', '2024-01-07', 143.00),
+(8, 'AAPL', '2024-01-08', 141.00),
+(9, 'AAPL', '2024-01-09', 144.00),
+(10, 'GOOGL', '2024-01-01', 2800.00),
+(11, 'GOOGL', '2024-01-02', 2780.00),
+(12, 'GOOGL', '2024-01-03', 2760.00),
+(13, 'GOOGL', '2024-01-04', 2740.00),
+(14, 'GOOGL', '2024-01-05', 2765.00);
+
+===============================================================
+
+7.) Healthcare: Patients with Multiple Prescriptions from Different Doctors (Asked in UHG)
+
+A healthcare system wants to identify patients who have received prescriptions from at least 2 different doctors for the same medication (indicating potential medication management issues or doctor shopping).
+
+Write a SQL query to find:
+	•	patient_id
+	•	patient_name
+	•	medication_name
+	•	doctor_count (number of distinct doctors who prescribed this medication)
+	•	doctor_names (comma-separated list of doctor names)
+
+Table: patients
++------------+-------------+
+| patient_id | patient_name|
++------------+-------------+
+| 1          | John Doe    |
+| 2          | Jane Smith  |
+| 3          | Bob Johnson |
++------------+-------------+
+
+Table: doctors
++----------+------------+
+| doctor_id| doctor_name|
++----------+------------+
+| 101      | Dr. Smith  |
+| 102      | Dr. Jones  |
+| 103      | Dr. Brown  |
++----------+------------+
+
+Table: prescriptions
++----------------+------------+----------+------------------+-------------+
+| prescription_id| patient_id | doctor_id| medication_name  | prescribe_date|
++----------------+------------+----------+------------------+-------------+
+| 1              | 1          | 101      | Aspirin          | 2024-01-15  |
+| 2              | 1          | 102      | Aspirin          | 2024-02-20  |
+| 3              | 1          | 101      | Metformin        | 2024-01-20  |
+| 4              | 2          | 102      | Aspirin          | 2024-01-10  |
+| 5              | 2          | 103      | Aspirin          | 2024-02-05  |
+| 6              | 2          | 102      | Lipitor          | 2024-01-25  |
+| 7              | 3          | 101      | Aspirin          | 2024-01-30  |
++----------------+------------+----------+------------------+-------------+
+
+Expected Output
++------------+-------------+------------------+--------------+--------------------------+
+| patient_id | patient_name| medication_name  | doctor_count | doctor_names             |
++------------+-------------+------------------+--------------+--------------------------+
+| 1          | John Doe    | Aspirin          | 2            | Dr. Smith, Dr. Jones     |
+| 2          | Jane Smith  | Aspirin          | 2            | Dr. Jones, Dr. Brown     |
++------------+-------------+------------------+--------------+--------------------------+
+
+Explanation
+	•	Patient 1 (John Doe) received Aspirin from 2 different doctors (Dr. Smith and Dr. Jones)
+	•	Patient 2 (Jane Smith) received Aspirin from 2 different doctors (Dr. Jones and Dr. Brown)
+	•	Patient 3 (Bob Johnson) received Aspirin from only 1 doctor, so doesnt qualify
+
+-- SQL Setup
+CREATE TABLE hard_sql.patients (
+    patient_id INT,
+    patient_name VARCHAR(100)
+);
+
+CREATE TABLE hard_sql.doctors (
+    doctor_id INT,
+    doctor_name VARCHAR(100)
+);
+
+CREATE TABLE hard_sql.prescriptions (
+    prescription_id INT,
+    patient_id INT,
+    doctor_id INT,
+    medication_name VARCHAR(100),
+    prescribe_date DATE
+);
+
+INSERT INTO hard_sql.patients VALUES
+(1, 'John Doe'),
+(2, 'Jane Smith'),
+(3, 'Bob Johnson');
+
+INSERT INTO hard_sql.doctors VALUES
+(101, 'Dr. Smith'),
+(102, 'Dr. Jones'),
+(103, 'Dr. Brown');
+
+INSERT INTO hard_sql.prescriptions VALUES
+(1, 1, 101, 'Aspirin', '2024-01-15'),
+(2, 1, 102, 'Aspirin', '2024-02-20'),
+(3, 1, 101, 'Metformin', '2024-01-20'),
+(4, 2, 102, 'Aspirin', '2024-01-10'),
+(5, 2, 103, 'Aspirin', '2024-02-05'),
+(6, 2, 102, 'Lipitor', '2024-01-25'),
+(7, 3, 101, 'Aspirin', '2024-01-30');
+
+
+===============================================================
+
+8.) E-commerce: Customers with Maximum Purchase Gap Analysis (Asked in Apple)
+
+An e-commerce platform wants to identify customers who have the longest gap between their first and second purchase, and also calculate their total spending pattern.
+
+Write a SQL query to find:
+	•	customer_id
+	•	customer_name
+	•	first_purchase_date
+	•	second_purchase_date
+	•	days_between_purchases (gap between first and second purchase)
+	•	total_orders (total number of orders placed)
+	•	total_spent (total amount spent across all orders)
+	•	avg_order_value (average value per order)
+
+Only include customers who have made at least 2 purchases.
+
+Table: customers
++-------------+---------------+
+|| customer_id| customer_name |
++-------------+---------------+
+|| 101        | Alice         |
+|| 102        | Bob           |
+|| 103        | Charlie       |
+|| 104        | Diana         |
+|| 105        | Eve           |
++-------------+---------------+
+
+Table: orders
++----------+-------------+------------+--------+
+|| order_id | customer_id | order_date | amount |
++----------+-------------+------------+--------+
+|| 1        | 101         | 2024-01-15| 500    |
+|| 2        | 101         | 2024-03-20| 750    |
+|| 3        | 101         | 2024-04-10| 600    |
+|| 4        | 102         | 2024-01-10| 300    |
+|| 5        | 102         | 2024-06-15| 450    |
+|| 6        | 102         | 2024-07-01| 550    |
+|| 7        | 103         | 2024-02-05| 800    |
+|| 8        | 103         | 2024-02-25| 900    |
+|| 9        | 103         | 2024-03-15| 700    |
+|| 10       | 104         | 2024-01-20| 400    |
+|| 11       | 104         | 2024-05-10| 500    |
+|| 12       | 105         | 2024-03-01| 600    |
++----------+-------------+------------+--------+
+
+Expected Output
++-------------+---------------+-------------------+--------------------+------------------------+--------------+--------------+----------------+
+|| customer_id| customer_name | first_purchase_date| second_purchase_date| days_between_purchases | total_orders | total_spent  | avg_order_value|
++-------------+---------------+-------------------+--------------------+------------------------+--------------+--------------+----------------+
+|| 102        | Bob           | 2024-01-10        | 2024-06-15         | 157                    | 3            | 1300.00      | 433.33         |
+|| 104        | Diana         | 2024-01-20        | 2024-05-10         | 111                    | 2            | 900.00       | 450.00         |
+|| 101        | Alice         | 2024-01-15        | 2024-03-20         | 65                     | 3            | 1850.00      | 616.67         |
+|| 103        | Charlie       | 2024-02-05        | 2024-02-25         | 20                     | 3            | 2400.00      | 800.00         |
++-------------+---------------+-------------------+--------------------+------------------------+--------------+--------------+----------------+
+
+Explanation
+	•	Bob has the longest gap (157 days) between first purchase (Jan 10) and second purchase (Jun 15)
+	•	Diana has 111 days gap between Jan 20 and May 10
+	•	Alice has 65 days gap between Jan 15 and Mar 20
+	•	Charlie has the shortest gap (20 days) between Feb 5 and Feb 25
+	•	Eve is excluded as she has only 1 purchase
+	•	Results are ordered by days_between_purchases DESC
+
+-- SQL Setup
+CREATE TABLE hard_sql.ecom_customers (
+    customer_id INT,
+    customer_name VARCHAR(100)
+);
+
+CREATE TABLE hard_sql.ecom_orders (
+    order_id INT,
+    customer_id INT,
+    order_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO hard_sql.ecom_customers VALUES
+(101, 'Alice'),
+(102, 'Bob'),
+(103, 'Charlie'),
+(104, 'Diana'),
+(105, 'Eve');
+
+INSERT INTO hard_sql.ecom_orders VALUES
+(1, 101, '2024-01-15', 500),
+(2, 101, '2024-03-20', 750),
+(3, 101, '2024-04-10', 600),
+(4, 102, '2024-01-10', 300),
+(5, 102, '2024-06-15', 450),
+(6, 102, '2024-07-01', 550),
+(7, 103, '2024-02-05', 800),
+(8, 103, '2024-02-25', 900),
+(9, 103, '2024-03-15', 700),
+(10, 104, '2024-01-20', 400),
+(11, 104, '2024-05-10', 500),
+(12, 105, '2024-03-01', 600);
+
+===============================================================
+
+9.) E-commerce: Customers Who Purchased Same Product in Consecutive Months (Asked in Amazon)
+
+An e-commerce platform wants to find customers who purchased the same product in two consecutive months (e.g., January and February).
+
+Write a SQL query to return:
+	•	customer_id
+	•	customer_name
+	•	product_id
+	•	product_name
+	•	first_month
+	•	second_month
+
+Table: customers
++-------------+---------------+
+|| customer_id| customer_name |
++-------------+---------------+
+|| 101        | Alice         |
+|| 102        | Bob           |
+|| 103        | Charlie       |
++-------------+---------------+
+
+Table: products
++------------+-------------+
+|| product_id| product_name|
++------------+-------------+
+|| 1         | Laptop      |
+|| 2         | Mouse       |
++------------+-------------+
+
+Table: gd_orders
++----------+-------------+------------+----------+
+|| order_id| customer_id | order_date | product_id|
++----------+-------------+------------+----------+
+|| 1       | 101         | 2024-01-15| 1         |
+|| 2       | 101         | 2024-02-20| 1         |
+|| 3       | 101         | 2024-03-10| 2         |
+|| 4       | 102         | 2024-01-10| 1         |
+|| 5       | 102         | 2024-03-15| 1         |
+|| 6       | 103         | 2024-02-05| 2         |
+|| 7       | 103         | 2024-03-12| 2         |
++----------+-------------+------------+----------+
+
+Expected Output
++-------------+---------------+------------+-------------+------------+-------------+
+|| customer_id| customer_name | product_id | product_name| first_month| second_month|
++-------------+---------------+------------+-------------+------------+-------------+
+|| 101        | Alice         | 1          | Laptop      | 2024-01    | 2024-02     |
+|| 103        | Charlie       | 2          | Mouse       | 2024-02    | 2024-03     |
++-------------+---------------+------------+-------------+------------+-------------+
+
+Explanation
+Alice purchased Laptop in Jan and Feb (consecutive) 
+Bob purchased Laptop in Jan and Mar (not consecutive) 
+Charlie purchased Mouse in Feb and Mar (consecutive) 
+
+-- SQL Setup
+CREATE TABLE hard_sql.customers (
+    customer_id INT,
+    customer_name VARCHAR(100)
+);
+
+CREATE TABLE hard_sql.products (
+    product_id INT,
+    product_name VARCHAR(100)
+);
+
+CREATE TABLE hard_sql.gd_orders (
+    order_id INT,
+    customer_id INT,
+    order_date DATE,
+    product_id INT
+);
+
+INSERT INTO hard_sql.customers VALUES
+(101, 'Alice'),
+(102, 'Bob'),
+(103, 'Charlie');
+
+INSERT INTO hard_sql.products VALUES
+(1, 'Laptop'),
+(2, 'Mouse');
+
+INSERT INTO hard_sql.gd_orders VALUES
+(1, 101, '2024-01-15', 1),
+(2, 101, '2024-02-20', 1),
+(3, 101, '2024-03-10', 2),
+(4, 102, '2024-01-10', 1),
+(5, 102, '2024-03-15', 1),
+(6, 103, '2024-02-05', 2),
+(7, 103, '2024-03-12', 2);
